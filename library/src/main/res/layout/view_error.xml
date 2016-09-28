@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    >
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:src="@drawable/ic_error"
+        />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="35dp"
+        android:scrollbars="none">
+        <TextView
+            android:id="@+id/error_title"
+            android:textSize="17sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxHeight="200dp"
+            android:layout_gravity="center_horizontal"
+            android:gravity="center"
+            android:text="@string/error_html_load_fail"
+            android:textColor="@color/text_black_light" />
+    </ScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center_horizontal">
+
+        <ImageView
+            android:id="@+id/refresh_img"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:background="@drawable/empty_click_refresh" />
+
+        <TextView
+            android:id="@+id/error_sub_msg"
+            android:textSize="13sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="4dp"
+            android:gravity="center"
+            android:lineSpacingExtra="2dp"
+            android:text="@string/click_to_refresh"
+            android:textColor="@color/text_gray_light"
+            />
+    </LinearLayout>
+
+</merge>

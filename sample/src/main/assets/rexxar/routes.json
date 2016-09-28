@@ -1,0 +1,17 @@
+{
+  "items": [
+    {
+      "deploy_time": "Sun, 09 Oct 2016 05:54:22 GMT",
+      "remote_file": "https://raw.githubusercontent.com/douban/rexxar-web/master/example/dist/rexxar/demo-252452ae58.html",
+      "uri": "douban://douban.com/rexxar_demo[/]?.*"
+    }
+  ],
+  "partial_items": [
+    {
+      "deploy_time": "Sun, 09 Oct 2016 05:54:22 GMT",
+      "remote_file": "https://raw.githubusercontent.com/douban/rexxar-web/master/example/dist/rexxar/demo-252452ae58.html",
+      "uri": "douban://partial.douban.com/rexxar_demo/_.*"
+    }
+  ],
+  "deploy_time": "Sun, 09 Oct 2016 05:54:22 GMT"
+}

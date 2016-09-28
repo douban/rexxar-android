@@ -1,0 +1,38 @@
+buildscript {
+    repositories {
+        maven { url 'http://qaci.intra.douban.com/nexus/content/repositories/central' }
+        maven { url 'http://qaci.intra.douban.com/nexus/content/repositories/douban' }
+        mavenCentral()
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.2.0'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.6'
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.4.1'
+    }
+}
+
+allprojects {
+    repositories {
+        maven { url 'http://qaci.intra.douban.com/nexus/content/repositories/central' }
+        maven { url 'http://qaci.intra.douban.com/nexus/content/repositories/douban' }
+        maven { url 'http://qaci.intra.douban.com/nexus/content/repositories/douban-snapshot' }
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+
+        mavenCentral()
+        jcenter()
+    }
+
+    tasks.withType(Javadoc) {
+        options.addStringOption('Xdoclint:none', '-quiet')
+        options.addStringOption('encoding', 'UTF-8')
+    }
+}
+
+
+ext {
+    compileSdkVersion = 23
+    buildToolsVersion = "23.0.2"
+    minSdkVersion = 14
+    targetSdkVersion = 22
+}

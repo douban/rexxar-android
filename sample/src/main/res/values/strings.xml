@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">RexxarAndroid</string>
+    <string name="clear">清除缓存</string>
+    <string name="title_partial_rexxar">Demo(局部rexxar)</string>
+    <string name="title_rexxar">Demo(Rexxar)</string>
+    <string name="success_cleard_cache">缓存清除成功</string>
+</resources>
