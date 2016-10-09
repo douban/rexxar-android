@@ -226,4 +226,4 @@ Demo 中的 PartialRexxarViewController 给出了一个示例。
 
 ## License
 
-Rexxar is released under the MIT license. See [LICENSE](LICENSE.md) for details.
+Rexxar is released under the MIT license. See [LICENSE](LICENSE) for details.
