@@ -32,22 +32,6 @@ Demo 中使用 github 的 raw 文件服务提供一个简单的路由表文件 r
    compile 'com.douban.rexxar:core:0.1.1'
 ```
 
-#### [jitpack](https://jitpack.io/)
-
-```groovy
-
-    allprojects {
-		repositories {
-			...
-			maven { url "https://jitpack.io" }
-		}
-	}
-	
-	dependencies {
-    	compile 'com.github.douban:rexxar-android:0.1.0'
-    }
-```
-
 
 ### 配置
 
