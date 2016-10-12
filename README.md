@@ -26,6 +26,12 @@ Demo 中使用 github 的 raw 文件服务提供一个简单的路由表文件 r
 
 ### 安装
 
+#### gradle
+
+```groovy
+   compile 'com.douban.rexxar:core:0.1.1'
+```
+
 #### [jitpack](https://jitpack.io/)
 
 ```groovy
