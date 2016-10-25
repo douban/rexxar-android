@@ -1,6 +1,7 @@
 package com.douban.rexxar.view;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -262,11 +263,11 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
     }
 
     public void onPageVisible() {
-        mCore.loadUrl("javascript:window.Rexxar.Lifecycle.onPageVisible()");
+        callFunction("Rexxar.Lifecycle.onPageVisible");
     }
 
     public void onPageInvisible() {
-        mCore.loadUrl("javascript:window.Rexxar.Lifecycle.onPageInvisible()");
+        callFunction("Rexxar.Lifecycle.onPageInvisible");
     }
 
     @Override
@@ -304,6 +305,34 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
             mCore.loadUri(mUri, this);
         } else {
             mCore.loadPartialUri(mUri, this);
+        }
+    }
+
+    /**
+     * Native调用js方法, 传递参数
+     *
+     * @param functionName 方法名
+     */
+    public void callFunction(String functionName) {
+        callFunction(functionName, null);
+    }
+
+    /**
+     * Native调用js方法, 传递参数
+     *
+     * @param functionName 方法名
+     * @param jsonString 参数,需要是json格式
+     */
+    public void callFunction(String functionName, String jsonString) {
+        if (TextUtils.isEmpty(functionName)) {
+            return;
+        }
+        if (TextUtils.isEmpty(jsonString)) {
+            mCore.loadUrl(String.format(Constants.FUNC_FORMAT, functionName));
+        } else {
+            jsonString = jsonString.replaceAll("(\\\\)([^utrn])", "\\\\\\\\$1$2");
+            jsonString = jsonString.replaceAll("(?<=[^\\\\])(\")", "\\\\\"");
+            mCore.loadUrl(String.format(Constants.FUNC_FORMAT_WITH_PARAMETERS, functionName, jsonString));
         }
     }
 }

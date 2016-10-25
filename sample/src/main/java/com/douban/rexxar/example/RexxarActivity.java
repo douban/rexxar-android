@@ -16,6 +16,9 @@ import com.douban.rexxar.example.widget.menu.MenuItem;
 import com.douban.rexxar.example.widget.menu.MenuWidget;
 import com.douban.rexxar.view.RexxarWebView;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,6 +68,23 @@ public class RexxarActivity extends AppCompatActivity {
         mRexxarWebView.loadUri(uri);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+//        testFunc();
+    }
+
+    private void testFunc() {
+        try {
+            JSONObject user = new JSONObject();
+            user.put("name", "name");
+            user.put("age", 18);
+            mRexxarWebView.callFunction("alert", user.toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void setMenuItems(List<MenuItem> menuItems) {
         if (null == menuItems || menuItems.size() == 0) {
             return;
@@ -81,4 +101,5 @@ public class RexxarActivity extends AppCompatActivity {
         }
         return super.onCreateOptionsMenu(menu);
     }
+
 }
