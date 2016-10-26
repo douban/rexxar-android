@@ -131,4 +131,14 @@ public class Constants {
      * Used return network error in Request Error
      */
     public static final String KEY_NETWORK_ERROR = "_network_error";
+
+    /**
+     * Java call js function format with parameters
+     */
+    public static final String FUNC_FORMAT_WITH_PARAMETERS = "javascript:window.%s('%s')";
+
+    /**
+     * Java call js function format without parameters
+     */
+    public static final String FUNC_FORMAT = "javascript:window.%s()";
 }
