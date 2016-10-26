@@ -29,7 +29,7 @@ Demo 中使用 github 的 raw 文件服务提供一个简单的路由表文件 r
 #### gradle
 
 ```groovy
-   compile 'com.douban.rexxar:core:0.1.1'
+   compile 'com.douban.rexxar:core:0.1.2'
 ```
 
 
@@ -205,6 +205,20 @@ Rexxar Container 提供了一些原生 UI 组件，供 Rexxar Web 使用。Rexxa
             .build());
 ```
 
+## 高级使用
+
+### native调用js方法
+
+```
+
+    // 方法名
+    RexxarWebView.callFunction(String functionName)
+    
+    // 方法名和json数据
+    RexxarWebView.callFunction(String functionName, String jsonString)
+    
+```
+  
 ## Partial RexxarWebView
 
 如果，你发现一个页面无法全部使用 Rexxar 实现。你可以在一个原生页面内内嵌一个 `RexxarWebView`，部分功能使用原生实现，另一部分功能使用 Rexxar 实现。
