@@ -331,6 +331,7 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
             mCore.loadUrl(String.format(Constants.FUNC_FORMAT, functionName));
         } else {
             jsonString = jsonString.replaceAll("(\\\\)([^utrn])", "\\\\\\\\$1$2");
+            jsonString = jsonString.replaceAll("(\\\\)([utrn])", "\\\\$1$2");
             jsonString = jsonString.replaceAll("(?<=[^\\\\])(\")", "\\\\\"");
             mCore.loadUrl(String.format(Constants.FUNC_FORMAT_WITH_PARAMETERS, functionName, jsonString));
         }
