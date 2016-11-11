@@ -34,4 +34,4 @@ dependencies {
     compile 'com.jakewharton:butterknife:6.1.0'
 }
 
-apply from: 'http://git.oschina.net/venshine/gradle-bintray-upload/raw/master/bintray.gradle'
+//apply from: 'http://git.oschina.net/venshine/gradle-bintray-upload/raw/master/bintray.gradle'
