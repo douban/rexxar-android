@@ -1,5 +1,12 @@
 # Rexxar Android
 
+
+[![Test Status](https://travis-ci.org/douban/rexxar-android.svg?branch=master)](https://travis-ci.org/douban/rexxar-android)
+[![IDE](https://img.shields.io/badge/Android-Studio-blue.svg)]()
+[![Android](https://img.shields.io/badge/Android-4.0-green.svg)]()
+[![Language](https://img.shields.io/badge/language-Java-blue.svg)]()
+
+
 **Rexxar** 是一个针对移动端的混合开发框架。现在支持 Android 和 iOS 平台。`rexxar-android` 是 Rexxar 在 Android 系统上的客户端实现。
 
 通过 Rexxar，你可以使用包括 javascript，css，html 在内的传统前端技术开发移动应用。Rexxar 的客户端实现 Rexxar Container 对于 Web 端使用何种技术并无要求。我们现在的 Rexxar 的前端实现 Rexxar Web，以及 Rexxar Container 在两个平台的实现 rexxar-ios 和 rexxar-android 项目中所带的 Demo 都使用了 [React](https://facebook.github.io/react/)。但你完全可以选择自己的前端框架在 Rexxar Container 中进行开发。
