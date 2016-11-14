@@ -30,7 +30,7 @@ public class MainApplication extends Application {
         Rexxar.initialize(this);
         Rexxar.setDebug(BuildConfig.DEBUG);
         // 设置并刷新route
-        RouteManager.getInstance().setRouteApi("https://raw.githubusercontent.com/douban/rexxar-web/master/example/dist/routes.json");
+        RouteManager.config(new RouteManager.RouteConfig("https://raw.githubusercontent.com/douban/rexxar-web/master/example/dist/routes.json", null));
         RouteManager.getInstance().refreshRoute(null);
         // 设置需要代理的资源
         ResourceProxy.getInstance().addProxyHosts(PROXY_HOSTS);
