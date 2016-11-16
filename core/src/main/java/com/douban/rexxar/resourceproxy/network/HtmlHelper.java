@@ -94,22 +94,26 @@ public class HtmlHelper {
         validRoutes.addAll(routes.partialItems);
         // 重新下载
         mDownloadingProcess.clear();
-        for (final Route route : validRoutes) {
-            CacheEntry htmlFile = CacheHelper.getInstance().findHtmlCache(route.getHtmlFile());
+        int totalSize = validRoutes.size();
+        // 需要下载的route数量
+        int newRouteCount = 0;
+        for (int i = 0; i < totalSize ; i ++) {
+            final Route tempRoute = validRoutes.get(i);
+            CacheEntry htmlFile = CacheHelper.getInstance().findHtmlCache(tempRoute.getHtmlFile());
             if (null == htmlFile) {
-                if (!mDownloadingProcess.contains(route.getHtmlFile())) {
-                    mDownloadingProcess.add(route.getHtmlFile());
-                    HtmlHelper.prepareHtmlFile(route.getHtmlFile(), new Callback() {
+                newRouteCount ++;
+                if (!mDownloadingProcess.contains(tempRoute.getHtmlFile())) {
+                    mDownloadingProcess.add(tempRoute.getHtmlFile());
+                    HtmlHelper.prepareHtmlFile(tempRoute.getHtmlFile(), new Callback() {
                         @Override
                         public void onFailure(Call call, IOException e) {
                             // 如果下载失败，则不移除
-//                            mDownloadingProcess.remove(route.getHtmlFile());
                             LogUtils.i(TAG, "download html failed" + e.getMessage());
                         }
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
-                            mDownloadingProcess.remove(route.getHtmlFile());
+                            mDownloadingProcess.remove(tempRoute.getHtmlFile());
                             LogUtils.i(TAG, "download html success");
                             // 如果全部文件下载成功，则发送校验成功事件
                             if (mDownloadingProcess.isEmpty()) {
@@ -121,7 +125,8 @@ public class HtmlHelper {
                 }
             } else {
                 htmlFile.close();
-                if (mDownloadingProcess.isEmpty()) {
+                // 如果所有html文件都已经缓存了,也可以更新route
+                if (newRouteCount == 0 && i == totalSize - 1) {
                     BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_VALID, null));
                 }
             }
