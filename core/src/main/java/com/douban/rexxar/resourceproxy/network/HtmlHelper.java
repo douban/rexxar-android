@@ -121,6 +121,9 @@ public class HtmlHelper {
                 }
             } else {
                 htmlFile.close();
+                if (mDownloadingProcess.isEmpty()) {
+                    BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_VALID, null));
+                }
             }
         }
     }
