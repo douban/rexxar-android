@@ -125,12 +125,6 @@ public class AlertDialogWidget implements RexxarWidget {
                         webView.loadUrl("javascript:" + negative.action);
                     }
                 });
-                builder.setPositiveButton(positive.text, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        webView.loadUrl("javascript:" + positive.action);
-                    }
-                });
                 builder.setNeutralButton(neutral.text, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
