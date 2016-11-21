@@ -12,6 +12,11 @@ public class Constants {
     public static final int CACHE_SIZE = 500 * 1024 * 1024; // 500M
 
     /**
+     * Schema for widget url
+     */
+    public static String SCHEMA = "douban";
+
+    /**
      * Container api pre-fix
      */
     public static final String CONTAINER_API_BASE = "http://rexxar-container/api";
@@ -19,7 +24,7 @@ public class Constants {
     /**
      * Container widget pre-fix
      */
-    public static final String CONTAINER_WIDGET_BASE = "douban://rexxar-container/widget";
+    public static final String CONTAINER_WIDGET_BASE = SCHEMA + "://rexxar-container/widget";
 
     // 本地asset的存储目录
     public static final String DEFAULT_ASSET_FILE_PATH = "rexxar";
