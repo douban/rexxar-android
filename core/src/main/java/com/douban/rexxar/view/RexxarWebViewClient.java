@@ -72,7 +72,7 @@ public class RexxarWebViewClient extends WebViewClient {
     @Override
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
         LogUtils.i(TAG, "[shouldOverrideUrlLoading] : url = " + url);
-        if (url.startsWith(Constants.CONTAINER_WIDGET_BASE)) {
+        if (url.startsWith(Constants.getContainerWidgetBase())) {
             boolean handled;
             for (RexxarWidget widget : mWidgets) {
                 if (null != widget) {
