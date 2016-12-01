@@ -109,7 +109,7 @@ public class CacheHelper {
         if (TextUtils.isEmpty(url)) {
             return null;
         }
-        url = Uri.parse(url).buildUpon().clearQuery().build().toString();
+//        url = Uri.parse(url).buildUpon().clearQuery().build().toString();
         if (!checkUrl(url)) {
             return null;
         }
