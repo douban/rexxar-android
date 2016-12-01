@@ -22,9 +22,10 @@ public class Constants {
     public static final String CONTAINER_API_BASE = "http://rexxar-container/api";
 
     /**
-     * Container widget pre-fix
+     * Container widget pre-fix without schema
+     * see {@link #getContainerWidgetBase()}
      */
-    public static final String CONTAINER_WIDGET_BASE = SCHEMA + "://rexxar-container/widget";
+    private static final String CONTAINER_WIDGET_BASE_ESCAPE_SCHEMA = "://rexxar-container/widget";
 
     // 本地asset的存储目录
     public static final String DEFAULT_ASSET_FILE_PATH = "rexxar";
@@ -50,7 +51,9 @@ public class Constants {
     // get 请求
     public static final String METHOD_GET = "GET";
 
-
+    public static final String getContainerWidgetBase() {
+        return SCHEMA + CONTAINER_WIDGET_BASE_ESCAPE_SCHEMA;
+    }
 
     public static final String MIME_TYPE_HTML = "text/html";
     public static final String MIME_TYPE_TEXT = "text/*";
