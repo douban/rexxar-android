@@ -26,6 +26,7 @@ import com.douban.rexxar.route.Route;
 import com.douban.rexxar.route.RouteManager;
 import com.douban.rexxar.utils.LogUtils;
 import com.douban.rexxar.utils.Utils;
+import com.douban.rexxar.utils.WebViewCompatUtils;
 
 import java.io.IOException;
 
@@ -177,6 +178,7 @@ public class RexxarWebViewCore extends SafeWebView {
     @SuppressLint("SetJavaScriptEnabled")
     protected void setupWebSettings(WebSettings ws) {
         ws.setAppCacheEnabled(true);
+        WebViewCompatUtils.enableJavaScriptForWebView(getContext(), ws);
         ws.setJavaScriptEnabled(true);
         ws.setGeolocationEnabled(true);
         ws.setBuiltInZoomControls(true);
