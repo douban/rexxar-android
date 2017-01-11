@@ -1,6 +1,8 @@
 package com.douban.rexxar.example;
 
 import android.app.Application;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 
 import com.douban.rexxar.Rexxar;
 import com.douban.rexxar.resourceproxy.ResourceProxy;
@@ -9,6 +11,7 @@ import com.douban.rexxar.route.RouteManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import okhttp3.OkHttpClient;
 
@@ -30,7 +33,7 @@ public class MainApplication extends Application {
         Rexxar.initialize(this);
         Rexxar.setDebug(BuildConfig.DEBUG);
         // 设置并刷新route
-        RouteManager.config(new RouteManager.RouteConfig("https://raw.githubusercontent.com/douban/rexxar-web/master/example/dist/routes.json", null));
+        RouteManager.config(new RouteManager.RouteConfig("https://raw.githubusercontent.com/douban/rexxar-web/master/example/dist/routes.json", getRouteCacheFileName()));
         RouteManager.getInstance().refreshRoute(null);
         // 设置需要代理的资源
         ResourceProxy.getInstance().addProxyHosts(PROXY_HOSTS);
@@ -44,4 +47,15 @@ public class MainApplication extends Application {
         Rexxar.setHostUserAgent(" Rexxar/1.2.x com.douban.frodo/4.3 ");
     }
 
+    public String getRouteCacheFileName() {
+        try {
+            PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), 0);
+            if (null != info) {
+                return String.format(Locale.getDefault(), "routes_%s.json", info.versionName);
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        return "routes.json";
+    }
 }

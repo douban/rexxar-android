@@ -133,7 +133,7 @@ public class RouteManager {
                 }
 
                 // load preset routes
-                if (null == mRoutes) {
+                if (null == mRoutes || mRoutes.isEmpty()) {
                     try {
                         String routeContent = readPresetRoutes();
                         if (!TextUtils.isEmpty(routeContent)) {
@@ -211,7 +211,7 @@ public class RouteManager {
 
 
     /**
-     * 刷新路由
+     * 刷新路由,检查html有效之后route再生效
      */
     public void refreshRoute(final RouteRefreshCallback callback) {
         RouteFetcher.fetchRoutes(new RouteRefreshCallback() {
@@ -224,6 +224,40 @@ public class RouteManager {
                     Routes routes = GsonHelper.getInstance().fromJson(mCheckingRouteString, new TypeToken<Routes>() {
                     }.getType());
                     ResourceProxy.getInstance().prepareHtmlFiles(routes);
+                } catch (Exception e) {
+                    LogUtils.e(TAG, e.getMessage());
+                    if (null != callback) {
+                        callback.onFail();
+                    }
+                }
+            }
+
+            @Override
+            public void onFail() {
+                if (null != callback) {
+                    callback.onFail();
+                }
+            }
+        });
+    }
+
+    /**
+     * 不校验html文件是否存在, 直接跟新route,避免route更新不及时引入的问题
+     *
+     * @param callback
+     */
+    public void refreshRouteFast(final RouteRefreshCallback callback) {
+        RouteFetcher.fetchRoutes(new RouteRefreshCallback() {
+            @Override
+            public void onSuccess(String data) {
+                try {
+                    mRoutes = GsonHelper.getInstance().fromJson(mCheckingRouteString, new TypeToken<Routes>() {
+                    }.getType());
+                    if (null != callback) {
+                        callback.onSuccess(data);
+                    }
+                    // prepare html files
+                    ResourceProxy.getInstance().prepareHtmlFiles(mRoutes);
                 } catch (Exception e) {
                     LogUtils.e(TAG, e.getMessage());
                     if (null != callback) {
@@ -322,7 +356,9 @@ public class RouteManager {
             fileDir.mkdirs();
         }
         String cacheFileName = (null != sRouteConfig && !TextUtils.isEmpty(sRouteConfig.routeCacheFileName)) ? sRouteConfig.routeCacheFileName : Constants.DEFAULT_DISK_ROUTES_FILE_NAME;
-        return new File(fileDir, cacheFileName);
+        File file = new File(fileDir, cacheFileName);
+        LogUtils.i(TAG, file.getAbsolutePath());
+        return file;
     }
 
     /**

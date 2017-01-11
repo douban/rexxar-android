@@ -100,7 +100,7 @@ public class HtmlHelper {
         for (int i = 0; i < totalSize ; i ++) {
             final Route tempRoute = validRoutes.get(i);
             CacheEntry htmlFile = CacheHelper.getInstance().findHtmlCache(tempRoute.getHtmlFile());
-            if (null == htmlFile) {
+            if (null == htmlFile || !htmlFile.isValid()) {
                 newRouteCount ++;
                 if (!mDownloadingProcess.contains(tempRoute.getHtmlFile())) {
                     mDownloadingProcess.add(tempRoute.getHtmlFile());
