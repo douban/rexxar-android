@@ -214,11 +214,11 @@ public class RouteManager {
      * 刷新路由,检查html有效之后route再生效
      */
     public void refreshRoute(final RouteRefreshCallback callback) {
+        mRouteRefreshCallback = callback;
         RouteFetcher.fetchRoutes(new RouteRefreshCallback() {
             @Override
             public void onSuccess(String data) {
                 mCheckingRouteString = data;
-                mRouteRefreshCallback = callback;
                 // prepare html files
                 try {
                     Routes routes = GsonHelper.getInstance().fromJson(mCheckingRouteString, new TypeToken<Routes>() {
@@ -247,11 +247,13 @@ public class RouteManager {
      * @param callback
      */
     public void refreshRouteFast(final RouteRefreshCallback callback) {
+        mRouteRefreshCallback = callback;
         RouteFetcher.fetchRoutes(new RouteRefreshCallback() {
             @Override
             public void onSuccess(String data) {
                 try {
-                    mRoutes = GsonHelper.getInstance().fromJson(mCheckingRouteString, new TypeToken<Routes>() {
+                    saveCachedRoutes(data);
+                    mRoutes = GsonHelper.getInstance().fromJson(data, new TypeToken<Routes>() {
                     }.getType());
                     if (null != callback) {
                         callback.onSuccess(data);
