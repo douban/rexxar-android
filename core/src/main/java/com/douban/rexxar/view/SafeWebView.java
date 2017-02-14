@@ -7,6 +7,8 @@ import android.webkit.WebView;
 
 import com.douban.rexxar.utils.Utils;
 
+import java.util.Map;
+
 
 /**
  * 解决Android 4.2以下的WebView注入Javascript对象引发的安全漏洞
@@ -14,6 +16,8 @@ import com.douban.rexxar.utils.Utils;
  * Created by luanqian on 15/10/28.
  */
 public class SafeWebView extends WebView {
+
+    protected boolean mIsDestroy = false;
 
     public SafeWebView(Context context) {
         super(context);
@@ -35,5 +39,27 @@ public class SafeWebView extends WebView {
         if (Utils.hasHoneycomb() && !Utils.hasJellyBeanMR1()) {
             removeJavascriptInterface("searchBoxJavaBridge_");
         }
+    }
+
+    @Override
+    public void destroy() {
+        mIsDestroy = true;
+        super.destroy();
+    }
+
+    @Override
+    public void loadUrl(String url) {
+        if (mIsDestroy) {
+            return;
+        }
+        super.loadUrl(url);
+    }
+
+    @Override
+    public void loadUrl(String url, Map<String, String> additionalHttpHeaders) {
+        if (mIsDestroy) {
+            return;
+        }
+        super.loadUrl(url, additionalHttpHeaders);
     }
 }
