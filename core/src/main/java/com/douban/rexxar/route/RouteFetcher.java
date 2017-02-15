@@ -109,7 +109,7 @@ class RouteFetcher {
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
-                            if (response.code() == 200) {
+                            if (response.isSuccessful()) {
                                 String data = IOUtils.toString(response.body()
                                         .byteStream());
                                 notifySuccess(callback, data);

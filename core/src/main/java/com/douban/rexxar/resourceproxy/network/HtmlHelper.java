@@ -7,6 +7,7 @@ import com.douban.rexxar.resourceproxy.cache.CacheHelper;
 import com.douban.rexxar.route.Route;
 import com.douban.rexxar.route.Routes;
 import com.douban.rexxar.utils.BusProvider;
+import com.douban.rexxar.utils.GsonHelper;
 import com.douban.rexxar.utils.LogUtils;
 import com.douban.rexxar.utils.io.IOUtils;
 
@@ -59,12 +60,13 @@ public class HtmlHelper {
                         // 存储失败，则失败
                         if (!result) {
                             onFailure(call, new IOException("file save fail!"));
-                            return;
+                        } else {
+                            if (null != callback) {
+                                callback.onResponse(call, response);
+                            }
                         }
-                    }
-                    // 2. 通知外面去查找
-                    if (null != callback) {
-                        callback.onResponse(call, response);
+                    } else {
+                        onFailure(call, new IOException(String.valueOf(response.code())));
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -97,6 +99,10 @@ public class HtmlHelper {
         int totalSize = validRoutes.size();
         // 需要下载的route数量
         int newRouteCount = 0;
+        if (Rexxar.DEBUG) {
+            LogUtils.i(TAG, "routes:" + GsonHelper.getInstance().toJson(routes));
+            LogUtils.i(TAG, "download total count:" + totalSize);
+        }
         for (int i = 0; i < totalSize ; i ++) {
             final Route tempRoute = validRoutes.get(i);
             CacheEntry htmlFile = CacheHelper.getInstance().findHtmlCache(tempRoute.getHtmlFile());
@@ -108,13 +114,13 @@ public class HtmlHelper {
                         @Override
                         public void onFailure(Call call, IOException e) {
                             // 如果下载失败，则不移除
-                            LogUtils.i(TAG, "download html failed" + e.getMessage());
+                            LogUtils.i(TAG, "download html failed" + tempRoute.getHtmlFile() + e.getMessage());
                         }
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
                             mDownloadingProcess.remove(tempRoute.getHtmlFile());
-                            LogUtils.i(TAG, "download html success");
+                            LogUtils.i(TAG, "download html success " + tempRoute.getHtmlFile());
                             // 如果全部文件下载成功，则发送校验成功事件
                             if (mDownloadingProcess.isEmpty()) {
                                 LogUtils.i(TAG, "download html complete");
@@ -124,6 +130,7 @@ public class HtmlHelper {
                     });
                 }
             } else {
+                LogUtils.i(TAG, "download exist " + tempRoute.getHtmlFile());
                 htmlFile.close();
                 // 如果所有html文件都已经缓存了,也可以更新route
                 if (newRouteCount == 0 && i == totalSize - 1) {
@@ -131,5 +138,6 @@ public class HtmlHelper {
                 }
             }
         }
+        LogUtils.i(TAG, "download new count:" + newRouteCount);
     }
 }
