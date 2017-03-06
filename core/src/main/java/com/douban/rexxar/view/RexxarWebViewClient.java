@@ -374,6 +374,7 @@ public class RexxarWebViewClient extends WebViewClient {
 
         @Override
         public void run() {
+            Response response = null;
             try {
                 // read cache first
                 CacheEntry cacheEntry = null;
@@ -388,7 +389,7 @@ public class RexxarWebViewClient extends WebViewClient {
                 }
 
                 // request network
-                Response response = ResourceProxy.getInstance().getNetwork()
+                response = ResourceProxy.getInstance().getNetwork()
                         .handle(Helper.buildRequest(mUrl));
                 // write cache
                 if (response.isSuccessful()) {
@@ -468,6 +469,9 @@ public class RexxarWebViewClient extends WebViewClient {
                     mOut.close();
                 } catch (IOException e) {
                     e.printStackTrace();
+                }
+                if (response != null && response.body() != null) {
+                    response.body().close();
                 }
             }
         }
