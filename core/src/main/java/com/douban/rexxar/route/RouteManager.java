@@ -221,8 +221,7 @@ public class RouteManager {
                 mCheckingRouteString = data;
                 // prepare html files
                 try {
-                    Routes routes = GsonHelper.getInstance().fromJson(mCheckingRouteString, new TypeToken<Routes>() {
-                    }.getType());
+                    Routes routes = GsonHelper.getInstance().fromJson(mCheckingRouteString, Routes.class);
                     ResourceProxy.getInstance().prepareHtmlFiles(routes);
                 } catch (Exception e) {
                     LogUtils.e(TAG, e.getMessage());
