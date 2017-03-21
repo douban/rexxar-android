@@ -330,8 +330,7 @@ public class RexxarWebViewClient extends WebViewClient {
             if (TextUtils.isEmpty(requestUrl)) {
                 return null;
             }
-            Request.Builder builder = new Request.Builder()
-                    .url(requestUrl);
+            Request.Builder builder = new Request.Builder();
             Uri uri = Uri.parse(requestUrl);
             String method = uri.getQueryParameter(Constants.KEY_METHOD);
             //  如果没有值则视为get
@@ -341,9 +340,9 @@ public class RexxarWebViewClient extends WebViewClient {
                 for (String key : names) {
                     formBodyBuilder.add(key, uri.getQueryParameter(key));
                 }
-                builder.method("POST", formBodyBuilder.build());
+                builder.method("POST", formBodyBuilder.build()).url(requestUrl.substring(0,requestUrl.indexOf("?")));
             } else {
-                builder.method("GET", null);
+                builder.method("GET", null).url(requestUrl);
             }
             builder.addHeader("User-Agent", Rexxar.getUserAgent());
             return builder.build();
