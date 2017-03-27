@@ -64,6 +64,10 @@ public class RexxarActivity extends AppCompatActivity {
         mRexxarWebView.addRexxarWidget(new PullToRefreshWidget());
         mRexxarWebView.addRexxarWidget(new MenuWidget());
 
+        // 设置local api
+        mRexxarWebView.addContainerApi(new FrodoContainerAPIs.LocationAPI());
+        mRexxarWebView.addContainerApi(new FrodoContainerAPIs.LogAPI());
+
         // load uri
         mRexxarWebView.loadUri(uri);
     }

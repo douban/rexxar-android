@@ -16,22 +16,11 @@ import okhttp3.Response;
  */
 public class RexxarContainerAPIHelper {
 
-    private static List<RexxarContainerAPI> mAPIS = new ArrayList<>();
-
-    public static void registerAPI(RexxarContainerAPI api) {
-        if (null != api) {
-            mAPIS.add(api);
+    public static Response handle(Request request, List<RexxarContainerAPI> containerAPIs) {
+        if (null == containerAPIs) {
+            return null;
         }
-    }
-
-    public static void registerAPIs(List<RexxarContainerAPI> apis) {
-        if (null != apis && !apis.isEmpty()) {
-            mAPIS.addAll(apis);
-        }
-    }
-
-    public static Response handle(Request request) {
-        for (RexxarContainerAPI api : mAPIS) {
+        for (RexxarContainerAPI api : containerAPIs) {
             String requestUrl = request.url().toString();
             int fragment = requestUrl.lastIndexOf('#');
             if (fragment > 0) {

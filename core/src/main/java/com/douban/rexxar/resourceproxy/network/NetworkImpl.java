@@ -24,11 +24,7 @@ public class NetworkImpl implements INetwork {
     @Override
     public Response handle(Request request) throws IOException {
         try {
-            Response response = RexxarContainerAPIHelper.handle(request);
-            if (null == response) {
-                response = mOkHttpClient.newCall(request).execute();
-            }
-            return response;
+            return mOkHttpClient.newCall(request).execute();
         } catch (Exception e) {
             throw new IOException(e);
         }

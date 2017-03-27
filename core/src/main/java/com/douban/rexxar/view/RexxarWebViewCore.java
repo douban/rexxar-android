@@ -22,6 +22,7 @@ import com.douban.rexxar.Rexxar;
 import com.douban.rexxar.resourceproxy.cache.CacheEntry;
 import com.douban.rexxar.resourceproxy.cache.CacheHelper;
 import com.douban.rexxar.resourceproxy.network.HtmlHelper;
+import com.douban.rexxar.resourceproxy.network.RexxarContainerAPI;
 import com.douban.rexxar.route.Route;
 import com.douban.rexxar.route.RouteManager;
 import com.douban.rexxar.utils.LogUtils;
@@ -241,6 +242,17 @@ public class RexxarWebViewCore extends SafeWebView {
             return;
         }
         mWebViewClient.addRexxarWidget(widget);
+    }
+
+    /**
+     * 自定义container api
+     *
+     * @param containerAPI
+     */
+    public void addContainerApi(RexxarContainerAPI containerAPI) {
+        if (null != containerAPI) {
+            mWebViewClient.addContainerApi(containerAPI);
+        }
     }
 
     @Override

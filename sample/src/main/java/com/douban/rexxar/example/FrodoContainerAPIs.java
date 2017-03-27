@@ -22,12 +22,6 @@ import okhttp3.ResponseBody;
  */
 public class FrodoContainerAPIs {
 
-    public static List<RexxarContainerAPI> sAPIs = new ArrayList<>();
-    static {
-        sAPIs.add(new LocationAPI());
-        sAPIs.add(new LogAPI());
-    }
-
     static Response.Builder newResponseBuilder(Request request) {
         Response.Builder responseBuilder = new Response.Builder();
         responseBuilder.request(request);
@@ -36,7 +30,7 @@ public class FrodoContainerAPIs {
         return responseBuilder;
     }
 
-    static class LocationAPI implements RexxarContainerAPI {
+    public static class LocationAPI implements RexxarContainerAPI {
 
         @Override
         public String getPath() {
@@ -58,7 +52,7 @@ public class FrodoContainerAPIs {
         }
     }
 
-    static class LogAPI implements RexxarContainerAPI {
+    public static class LogAPI implements RexxarContainerAPI {
 
         @Override
         public String getPath() {

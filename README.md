@@ -36,7 +36,7 @@ Demo 中使用 github 的 raw 文件服务提供一个简单的路由表文件 r
 #### gradle
 
 ```groovy
-   compile 'com.douban.rexxar:core:0.2.1'
+   compile 'com.douban.rexxar:core:0.2.5'
 ```
 
 
