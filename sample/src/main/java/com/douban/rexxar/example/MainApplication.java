@@ -6,7 +6,6 @@ import android.content.pm.PackageManager;
 
 import com.douban.rexxar.Rexxar;
 import com.douban.rexxar.resourceproxy.ResourceProxy;
-import com.douban.rexxar.resourceproxy.network.RexxarContainerAPIHelper;
 import com.douban.rexxar.route.RouteManager;
 
 import java.util.ArrayList;
@@ -37,8 +36,6 @@ public class MainApplication extends Application {
         RouteManager.getInstance().refreshRoute(null);
         // 设置需要代理的资源
         ResourceProxy.getInstance().addProxyHosts(PROXY_HOSTS);
-        // 设置local api
-        RexxarContainerAPIHelper.registerAPIs(FrodoContainerAPIs.sAPIs);
         // 设置自定义的OkHttpClient
         Rexxar.setOkHttpClient(new OkHttpClient().newBuilder()
                 .retryOnConnectionFailure(true)

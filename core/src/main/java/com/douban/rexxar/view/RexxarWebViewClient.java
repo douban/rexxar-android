@@ -15,6 +15,8 @@ import com.douban.rexxar.Rexxar;
 import com.douban.rexxar.resourceproxy.ResourceProxy;
 import com.douban.rexxar.resourceproxy.cache.CacheEntry;
 import com.douban.rexxar.resourceproxy.cache.CacheHelper;
+import com.douban.rexxar.resourceproxy.network.RexxarContainerAPI;
+import com.douban.rexxar.resourceproxy.network.RexxarContainerAPIHelper;
 import com.douban.rexxar.utils.BusProvider;
 import com.douban.rexxar.utils.LogUtils;
 import com.douban.rexxar.utils.MimeUtils;
@@ -52,7 +54,10 @@ public class RexxarWebViewClient extends WebViewClient {
 
     static final String TAG = RexxarWebViewClient.class.getSimpleName();
 
+    // webView支持的widget
     private List<RexxarWidget> mWidgets = new ArrayList<>();
+    // webView支持的container api
+    private List<RexxarContainerAPI> mContainerApis = new ArrayList<>();
 
     /**
      * 自定义url拦截处理
@@ -62,6 +67,17 @@ public class RexxarWebViewClient extends WebViewClient {
     public void addRexxarWidget(RexxarWidget widget) {
         if (null != widget) {
             mWidgets.add(widget);
+        }
+    }
+
+    /**
+     * 自定义container api
+     *
+     * @param containerAPI
+     */
+    public void addContainerApi(RexxarContainerAPI containerAPI) {
+        if (null != containerAPI) {
+            mContainerApis.add(containerAPI);
         }
     }
 
@@ -388,8 +404,12 @@ public class RexxarWebViewClient extends WebViewClient {
                 }
 
                 // request network
-                response = ResourceProxy.getInstance().getNetwork()
-                        .handle(Helper.buildRequest(mUrl));
+                Request request = Helper.buildRequest(mUrl);
+                // 优先用container-api处理, 如果container-api无法处理, 再去网络发出请求
+                response = RexxarContainerAPIHelper.handle(request, mContainerApis);
+                if (null == response) {
+                    response = ResourceProxy.getInstance().getNetwork().handle(request);
+                }
                 // write cache
                 if (response.isSuccessful()) {
                     InputStream inputStream = null;

@@ -11,6 +11,7 @@ import android.widget.ProgressBar;
 
 import com.douban.rexxar.Constants;
 import com.douban.rexxar.R;
+import com.douban.rexxar.resourceproxy.network.RexxarContainerAPI;
 import com.douban.rexxar.utils.BusProvider;
 
 import java.lang.ref.WeakReference;
@@ -260,6 +261,17 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
             return;
         }
         mCore.addRexxarWidget(widget);
+    }
+
+    /**
+     * 自定义container api
+     *
+     * @param containerAPI
+     */
+    public void addContainerApi(RexxarContainerAPI containerAPI) {
+        if (null != containerAPI) {
+            mCore.addContainerApi(containerAPI);
+        }
     }
 
     public void onPageVisible() {
