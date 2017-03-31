@@ -85,6 +85,10 @@ public class RexxarWebViewClient extends WebViewClient {
         return mWidgets;
     }
 
+    public List<RexxarContainerAPI> getRexxarContainerApis() {
+        return mContainerApis;
+    }
+
     @Override
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
         LogUtils.i(TAG, "[shouldOverrideUrlLoading] : url = " + url);

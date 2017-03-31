@@ -266,6 +266,11 @@ public class RexxarWebViewCore extends SafeWebView {
                     ((RexxarWebViewClient) client).addRexxarWidget(widget);
                 }
             }
+            for (RexxarContainerAPI api : mWebViewClient.getRexxarContainerApis()) {
+                if (null != api) {
+                    ((RexxarWebViewClient) client).addContainerApi(api);
+                }
+            }
         }
         mWebViewClient = (RexxarWebViewClient) client;
         super.setWebViewClient(client);
