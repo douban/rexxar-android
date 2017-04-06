@@ -358,7 +358,7 @@ public class RexxarWebViewClient extends WebViewClient {
                 FormBody.Builder formBodyBuilder = new FormBody.Builder();
                 Set<String> names = uri.getQueryParameterNames();
                 for (String key : names) {
-                    if(!Constants.METHOD_POST.equalsIgnoreCase(key))
+                    if(!Constants.KEY_METHOD.equalsIgnoreCase(key))
                         formBodyBuilder.add(key, uri.getQueryParameter(key));
                 }
                 builder.method("POST", formBodyBuilder.build()).url(requestUrl.substring(0,requestUrl.indexOf("?")));
