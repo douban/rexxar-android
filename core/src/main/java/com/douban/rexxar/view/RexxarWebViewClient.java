@@ -238,15 +238,23 @@ public class RexxarWebViewClient extends WebViewClient {
                 }
             });
             return xResponse;
-        } catch (IOException e) {
-            e.printStackTrace();
-            LogUtils.e(TAG, "url : " + requestUrl + " " + e.getMessage());
-            return super.shouldInterceptRequest(webView, requestUrl);
         } catch (Throwable e) {
             e.printStackTrace();
             LogUtils.e(TAG, "url : " + requestUrl + " " + e.getMessage());
-            return super.shouldInterceptRequest(webView, requestUrl);
+            return super.shouldInterceptRequest(webView, wrapperRequestUrl(requestUrl, e));
         }
+    }
+
+    /**
+     * 拦截请求失败时也可以尝试修改请求的url
+     *
+     * @param originRequestUrl 原始请求地址
+     * @param throwable 拦截出错原因
+     *
+     * @return 包装之后的请求地址
+     */
+    protected String wrapperRequestUrl(String originRequestUrl, Throwable throwable) {
+        return originRequestUrl;
     }
 
     /**
