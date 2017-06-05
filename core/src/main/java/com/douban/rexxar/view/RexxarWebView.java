@@ -126,9 +126,9 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
     }
 
     public void loadUri(String uri) {
-        mCore.loadUri(uri);
         this.mUri = uri;
         this.mUsePage = true;
+        mCore.loadUri(uri,this);
     }
 
     public void loadUri(String uri, final RexxarWebViewCore.UriLoadCallback callback) {
