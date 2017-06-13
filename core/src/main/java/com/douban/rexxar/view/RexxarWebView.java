@@ -126,9 +126,9 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
     }
 
     public void loadUri(String uri) {
-        mCore.loadUri(uri);
         this.mUri = uri;
         this.mUsePage = true;
+        mCore.loadUri(uri,this);
     }
 
     public void loadUri(String uri, final RexxarWebViewCore.UriLoadCallback callback) {
@@ -212,7 +212,18 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
 
     public void destroy() {
         mSwipeRefreshLayout.removeView(mCore);
-        mCore.destroy();
+        mCore.stopLoading();
+        // 退出时调用此方法，移除绑定的服务，否则某些特定系统会报错
+        mCore.getSettings().setJavaScriptEnabled(false);
+        mCore.clearHistory();
+        mCore.clearView();
+        mCore.removeAllViews();
+
+        try {
+            mCore.destroy();
+        } catch (Throwable ex) {
+
+        }
         mCore = null;
     }
 
