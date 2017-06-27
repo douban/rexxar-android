@@ -1,5 +1,6 @@
 package com.douban.rexxar.view;
 
+import android.annotation.TargetApi;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -92,28 +93,33 @@ public class RexxarWebViewClient extends WebViewClient {
     @Override
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
         LogUtils.i(TAG, "[shouldOverrideUrlLoading] : url = " + url);
-        if (url.startsWith(Constants.getContainerWidgetBase())) {
-            boolean handled;
-            for (RexxarWidget widget : mWidgets) {
-                if (null != widget) {
-                    handled = widget.handle(view, url);
-                    if (handled) {
-                        return true;
-                    }
+        boolean handled;
+        for (RexxarWidget widget : mWidgets) {
+            if (null != widget) {
+                handled = widget.handle(view, url);
+                if (handled) {
+                    return true;
                 }
             }
         }
         return super.shouldOverrideUrlLoading(view, url);
     }
 
+    @TargetApi(21)
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+        WebResourceResponse resourceResponse;
         if (Utils.hasLollipop()) {
-            return handleResourceRequest(view, request.getUrl().toString());
+            resourceResponse = handleResourceRequest(view, request.getUrl().toString());
         } else {
-            return super.shouldInterceptRequest(view, request);
+            resourceResponse = super.shouldInterceptRequest(view, request);
         }
+        if (resourceResponse == null) {
+            monitorRequestUrl(request.getUrl().toString(), null);
+        }
+        return resourceResponse;
     }
+
 
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
@@ -147,9 +153,9 @@ public class RexxarWebViewClient extends WebViewClient {
      * <p>
      * <note>这个方法会在渲染线程执行，如果做了耗时操作会block渲染</note>
      */
-    private WebResourceResponse handleResourceRequest(WebView webView, String requestUrl) {
+    protected WebResourceResponse handleResourceRequest(WebView webView, String requestUrl) {
         if (!shouldIntercept(requestUrl)) {
-            return super.shouldInterceptRequest(webView, requestUrl);
+            return super.shouldInterceptRequest(webView, monitorRequestUrl(requestUrl, new Throwable("should not intercept")));
         }
         LogUtils.i(TAG, "[handleResourceRequest] url =  " + requestUrl);
 
@@ -241,19 +247,19 @@ public class RexxarWebViewClient extends WebViewClient {
         } catch (Throwable e) {
             e.printStackTrace();
             LogUtils.e(TAG, "url : " + requestUrl + " " + e.getMessage());
-            return super.shouldInterceptRequest(webView, wrapperRequestUrl(requestUrl, e));
+            return super.shouldInterceptRequest(webView, monitorRequestUrl(requestUrl, e));
         }
     }
 
     /**
-     * 拦截请求失败时也可以尝试修改请求的url
+     * 拦截请求失败时便于追踪
      *
      * @param originRequestUrl 原始请求地址
      * @param throwable 拦截出错原因
      *
      * @return 包装之后的请求地址
      */
-    protected String wrapperRequestUrl(String originRequestUrl, Throwable throwable) {
+    protected String monitorRequestUrl(String originRequestUrl, Throwable throwable) {
         return originRequestUrl;
     }
 

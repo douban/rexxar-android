@@ -34,6 +34,10 @@ public class SafeWebView extends WebView {
         removeSearchBoxJavaBridgeInterface();
     }
 
+    public SafeWebView(Context context, AttributeSet attrs, int defStyleAttr, boolean privateBrowsing) {
+        super(context, attrs, defStyleAttr, privateBrowsing);
+    }
+
     @SuppressLint("NewApi")
     private void removeSearchBoxJavaBridgeInterface() {
         if (Utils.hasHoneycomb() && !Utils.hasJellyBeanMR1()) {
