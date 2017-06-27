@@ -93,14 +93,12 @@ public class RexxarWebViewClient extends WebViewClient {
     @Override
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
         LogUtils.i(TAG, "[shouldOverrideUrlLoading] : url = " + url);
-        if (url.startsWith(Constants.getContainerWidgetBase())) {
-            boolean handled;
-            for (RexxarWidget widget : mWidgets) {
-                if (null != widget) {
-                    handled = widget.handle(view, url);
-                    if (handled) {
-                        return true;
-                    }
+        boolean handled;
+        for (RexxarWidget widget : mWidgets) {
+            if (null != widget) {
+                handled = widget.handle(view, url);
+                if (handled) {
+                    return true;
                 }
             }
         }
@@ -121,6 +119,7 @@ public class RexxarWebViewClient extends WebViewClient {
         }
         return resourceResponse;
     }
+
 
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
