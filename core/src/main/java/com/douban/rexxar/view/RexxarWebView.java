@@ -13,6 +13,7 @@ import com.douban.rexxar.Constants;
 import com.douban.rexxar.R;
 import com.douban.rexxar.resourceproxy.network.RexxarContainerAPI;
 import com.douban.rexxar.utils.BusProvider;
+import com.douban.rexxar.utils.RxLoadError;
 
 import java.lang.ref.WeakReference;
 import java.util.Map;
@@ -197,13 +198,13 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
     }
 
     @Override
-    public boolean onFail(final RexxarWebViewCore.RxLoadError error) {
+    public boolean onFail(final RxLoadError error) {
         post(new Runnable() {
             @Override
             public void run() {
                 if (null == mUriLoadCallback.get() || !mUriLoadCallback.get().onFail(error)) {
                     mProgressBar.setVisibility(View.GONE);
-                    mErrorView.show(error.messsage);
+                    mErrorView.show(error.message);
                 }
             }
         });
@@ -305,17 +306,16 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
             reload();
         } else if (event.eventId == Constants.EVENT_REXXAR_NETWORK_ERROR) {
             boolean handled = false;
-            RexxarWebViewCore.RxLoadError error = RexxarWebViewCore.RxLoadError.UNKNOWN;
+            RxLoadError error = RxLoadError.UNKNOWN;
             if (null != event.data) {
-                int errorType = event.data.getInt(Constants.KEY_ERROR_TYPE);
-                error = RexxarWebViewCore.RxLoadError.parse(errorType);
+                error = event.data.getParcelable(Constants.KEY_ERROR);
             }
             if (null != mUriLoadCallback && null != mUriLoadCallback.get()) {
                 handled = mUriLoadCallback.get().onFail(error);
             }
             if (!handled) {
                 mProgressBar.setVisibility(View.GONE);
-                mErrorView.show(error.messsage);
+                mErrorView.show(error.message);
             }
         }
     }

@@ -106,7 +106,7 @@ public class Constants {
     public static final int EVENT_REXXAR_NETWORK_ERROR= EVENT_REXXAR_BASE + 6;
     public static final int EVENT_REXXAR_RETRY = EVENT_REXXAR_BASE + 7;
 
-    public static final String KEY_ERROR_TYPE = "key_error_type";
+    public static final String KEY_ERROR = "key_error";
 
     public static final int BUS_EVENT_ROUTE_CHECK_VALID = 1000;
 
