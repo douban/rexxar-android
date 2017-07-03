@@ -108,6 +108,7 @@ public class RexxarWebViewCore extends SafeWebView {
         UNKNOWN(10, "unknown");
 
         public String messsage;
+        public String extra;
         public int type;
         RxLoadError(int type, String message) {
             this.type = type;
@@ -368,7 +369,9 @@ public class RexxarWebViewCore extends SafeWebView {
                 @Override
                 public void onFailure(Call call, IOException e) {
                     if (null != callback) {
-                        callback.onFail(RxLoadError.HTML_DOWNLOAD_FAIL);
+                        RxLoadError error = RxLoadError.HTML_DOWNLOAD_FAIL;
+                        error.extra = route.getHtmlFile();
+                        callback.onFail(error);
                     }
                 }
 
@@ -389,7 +392,9 @@ public class RexxarWebViewCore extends SafeWebView {
                                 }
                             } else {
                                 if (null != callback) {
-                                    callback.onFail(RxLoadError.HTML_DOWNLOAD_FAIL);
+                                    RxLoadError error = RxLoadError.HTML_DOWNLOAD_FAIL;
+                                    error.extra = route.getHtmlFile();
+                                    callback.onFail(error);
                                 }
                             }
                         }
