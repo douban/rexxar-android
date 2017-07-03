@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Parcelable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.webkit.DownloadListener;
@@ -26,6 +27,7 @@ import com.douban.rexxar.resourceproxy.network.RexxarContainerAPI;
 import com.douban.rexxar.route.Route;
 import com.douban.rexxar.route.RouteManager;
 import com.douban.rexxar.utils.LogUtils;
+import com.douban.rexxar.utils.RxLoadError;
 import com.douban.rexxar.utils.Utils;
 import com.douban.rexxar.utils.WebViewCompatUtils;
 
@@ -93,49 +95,6 @@ public class RexxarWebViewCore extends SafeWebView {
         @Override
         public boolean onFail(RxLoadError error) {
             return false;
-        }
-    }
-
-    /**
-     * Rexxar doLoadCache error
-     */
-    public enum RxLoadError {
-        ROUTE_NOT_FOUND(0, "无法找到合适的Route"), // route找不到
-        HTML_NO_CACHE(1, "找不到html缓存"), // 没有缓存
-        HTML_DOWNLOAD_FAIL(2, "资源加载失败"), // html下载失败
-        HTML_CACHE_INVALID(3, "html缓存失效"), // html缓存实效
-        JS_CACHE_INVALID(4, "js缓存失效"), // js
-        UNKNOWN(10, "unknown");
-
-        public String messsage;
-        public String extra;
-        public int type;
-        RxLoadError(int type, String message) {
-            this.type = type;
-            this.messsage = message;
-        }
-
-        public static RxLoadError parse(int type) {
-            switch (type) {
-                case 0: {
-                    return ROUTE_NOT_FOUND;
-                }
-                case 1: {
-                    return HTML_NO_CACHE;
-                }
-                case 2: {
-                    return HTML_DOWNLOAD_FAIL;
-                }
-                case 3: {
-                    return HTML_CACHE_INVALID;
-                }
-                case 4: {
-                    return JS_CACHE_INVALID;
-                }
-                default: {
-                    return UNKNOWN;
-                }
-            }
         }
     }
 

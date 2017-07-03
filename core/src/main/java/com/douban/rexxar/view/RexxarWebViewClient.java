@@ -21,6 +21,7 @@ import com.douban.rexxar.resourceproxy.network.RexxarContainerAPIHelper;
 import com.douban.rexxar.utils.BusProvider;
 import com.douban.rexxar.utils.LogUtils;
 import com.douban.rexxar.utils.MimeUtils;
+import com.douban.rexxar.utils.RxLoadError;
 import com.douban.rexxar.utils.Utils;
 import com.douban.rexxar.utils.io.IOUtils;
 
@@ -168,11 +169,15 @@ public class RexxarWebViewClient extends WebViewClient {
             final CacheEntry cacheEntry = CacheHelper.getInstance().findHtmlCache(requestUrl);
             if (null == cacheEntry) {
                 // 没有cache，显示错误界面
-                showError(RexxarWebViewCore.RxLoadError.HTML_NO_CACHE.type);
+                RxLoadError error = RxLoadError.HTML_NO_CACHE.clone();
+                error.extra = "cacheEntry is null";
+                showError(error);
                 return super.shouldInterceptRequest(webView, requestUrl);
             } else if (!cacheEntry.isValid()) {
                 // 有cache但无效，显示错误界面且清除缓存
-                showError(RexxarWebViewCore.RxLoadError.HTML_NO_CACHE.type);
+                RxLoadError error = RxLoadError.HTML_NO_CACHE.clone();
+                error.extra = "cacheEntry is invalid";
+                showError(error);
                 CacheHelper.getInstance().removeHtmlCache(requestUrl);
             } else {
                 LogUtils.i(TAG, "cache hit :" + requestUrl);
@@ -181,13 +186,21 @@ public class RexxarWebViewClient extends WebViewClient {
                     data = IOUtils.toString(cacheEntry.inputStream);
                     // hack 检查cache是否完整
                     if (TextUtils.isEmpty(data) || !data.endsWith("</html>")) {
-                        showError(RexxarWebViewCore.RxLoadError.HTML_CACHE_INVALID.type);
+                        RxLoadError error = RxLoadError.HTML_CACHE_INVALID.clone();
+                        if (TextUtils.isEmpty(data)) {
+                            error.extra = "html is empty";
+                        } else {
+                            error.extra = "html is not end with </html>";
+                        }
+                        showError(error);
                         CacheHelper.getInstance().removeHtmlCache(requestUrl);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
                     // hack 检查cache是否完整
-                    showError(RexxarWebViewCore.RxLoadError.HTML_CACHE_INVALID.type);
+                    RxLoadError error = RxLoadError.HTML_CACHE_INVALID.clone();
+                    error.extra = e.getMessage();
+                    showError(error);
                     CacheHelper.getInstance().removeHtmlCache(requestUrl);
                 }
                 return new WebResourceResponse(Constants.MIME_TYPE_HTML, "utf-8", IOUtils.toInputStream(data));
@@ -210,12 +223,20 @@ public class RexxarWebViewClient extends WebViewClient {
                 try {
                     data = IOUtils.toString(cacheEntry.inputStream);
                     if (TextUtils.isEmpty(data) || (cacheEntry.length > 0 && cacheEntry.length != data.getBytes().length)) {
-                        showError(RexxarWebViewCore.RxLoadError.JS_CACHE_INVALID.type);
+                        RxLoadError error = RxLoadError.JS_CACHE_INVALID.clone();
+                        if (TextUtils.isEmpty(data)) {
+                            error.extra = "js is empty";
+                        } else {
+                            error.extra = "cache length : " + cacheEntry.length + "; data length : " + data.getBytes().length;
+                        }
+                        showError(error);
                         CacheHelper.getInstance().removeInternalCache(requestUrl);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
-                    showError(RexxarWebViewCore.RxLoadError.JS_CACHE_INVALID.type);
+                    RxLoadError error = RxLoadError.JS_CACHE_INVALID.clone();
+                    error.extra = e.getMessage();
+                    showError(error);
                     CacheHelper.getInstance().removeInternalCache(requestUrl);
                 }
                 LogUtils.i(TAG, "cache hit :" + requestUrl);
@@ -266,11 +287,11 @@ public class RexxarWebViewClient extends WebViewClient {
     /**
      * html或js加载错误，页面无法渲染，通知{@link RexxarWebView}显示错误界面，重新加载
      *
-     * @param errorType 错误类型
+     * @param error 错误
      */
-    public void showError(int errorType) {
+    public void showError(RxLoadError error) {
         Bundle bundle = new Bundle();
-        bundle.putInt(Constants.KEY_ERROR_TYPE, errorType);
+        bundle.putParcelable(Constants.KEY_ERROR, error);
         BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.EVENT_REXXAR_NETWORK_ERROR, bundle));
     }
 
@@ -450,7 +471,9 @@ public class RexxarWebViewClient extends WebViewClient {
                 } else {
                     LogUtils.i(TAG, "load async failed :" + mUrl);
                     if (Helper.isJsResource(mUrl)) {
-                        showError(RexxarWebViewCore.RxLoadError.JS_CACHE_INVALID.type);
+                        RxLoadError error = RxLoadError.JS_CACHE_INVALID.clone();
+                        error.extra = "request is fail, response code: " + response.code();
+                        showError(error);
                         return;
                     }
 
@@ -489,7 +512,9 @@ public class RexxarWebViewClient extends WebViewClient {
                 e.printStackTrace();
                 LogUtils.i(TAG, "load async exception :" + mUrl + " ; " + e.getMessage());
                 if (Helper.isJsResource(mUrl)) {
-                    showError(RexxarWebViewCore.RxLoadError.JS_CACHE_INVALID.type);
+                    RxLoadError error = RxLoadError.JS_CACHE_INVALID.clone();
+                    error.extra = e.getMessage();
+                    showError(error);
                     return;
                 }
                 byte[] result = wrapperErrorResponse(e);
