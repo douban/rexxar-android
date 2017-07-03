@@ -209,7 +209,7 @@ public class RexxarWebViewClient extends WebViewClient {
                 String data = "";
                 try {
                     data = IOUtils.toString(cacheEntry.inputStream);
-                    if (TextUtils.isEmpty(data) || (cacheEntry.length > 0 && cacheEntry.length != data.length())) {
+                    if (TextUtils.isEmpty(data) || (cacheEntry.length > 0 && cacheEntry.length != data.getBytes().length)) {
                         showError(RexxarWebViewCore.RxLoadError.JS_CACHE_INVALID.type);
                         CacheHelper.getInstance().removeInternalCache(requestUrl);
                     }
