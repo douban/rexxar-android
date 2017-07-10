@@ -113,7 +113,7 @@ public class CacheHelper {
         if (!checkUrl(url)) {
             return null;
         }
-        CacheEntry result;
+        CacheEntry result = null;
         // 遍历外部缓存
         for (ICache cache : mCaches) {
             result = cache.findCache(url);
@@ -121,10 +121,9 @@ public class CacheHelper {
                 return result;
             }
         }
-        // 遍历内部缓存
-        result = mInternalHtmlCache.findCache(url);
-        if (null != result) {
-            return result;
+        if (mCacheEnabled) {
+            // 遍历内部缓存
+            result = mInternalHtmlCache.findCache(url);
         }
         return result;
     }
