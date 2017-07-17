@@ -309,8 +309,7 @@ public class RexxarWebViewCore extends SafeWebView {
         if (null != callback) {
             callback.onStartLoad();
         }
-        CacheEntry cacheEntry = CacheHelper.getInstance().findHtmlCache(route.getHtmlFile());
-        if (null != cacheEntry && cacheEntry.isValid()) {
+        if (CacheHelper.getInstance().hasHtmlCached(route.getHtmlFile())) {
             // show cache
             doLoadCache(uri, route);
             if (null != callback) {

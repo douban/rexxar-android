@@ -92,7 +92,7 @@ public class HtmlFileCache implements ICache {
         } catch (Exception e) {
             e.printStackTrace();
             if (null != saveFile && saveFile.exists()) {
-                saveFile.exists();
+                saveFile.delete();
             }
         }
         return false;

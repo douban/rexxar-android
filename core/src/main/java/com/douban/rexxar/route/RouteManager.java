@@ -224,6 +224,7 @@ public class RouteManager {
                     Routes routes = GsonHelper.getInstance().fromJson(mCheckingRouteString, Routes.class);
                     ResourceProxy.getInstance().prepareHtmlFiles(routes);
                 } catch (Exception e) {
+                    // FIXME: 解析失败，不会更新
                     LogUtils.e(TAG, e.getMessage());
                     if (null != callback) {
                         callback.onFail();
@@ -233,6 +234,7 @@ public class RouteManager {
 
             @Override
             public void onFail() {
+                // FIXME: 请求失败，不会更新
                 if (null != callback) {
                     callback.onFail();
                 }
