@@ -123,10 +123,8 @@ public class CacheHelper {
                 return result;
             }
         }
-        if (mCacheEnabled) {
-            // 遍历内部缓存
-            result = mInternalHtmlCache.findCache(url);
-        }
+        // 遍历内部缓存
+        result = mInternalHtmlCache.findCache(url);
         return result;
     }
 

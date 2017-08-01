@@ -210,7 +210,7 @@ public class RexxarWebViewClient extends WebViewClient {
         }
 
         // js直接返回
-        if (Helper.isJsResource(requestUrl)) {
+        if (CacheHelper.getInstance().cacheEnabled() && Helper.isJsResource(requestUrl)) {
             final CacheEntry cacheEntry = CacheHelper.getInstance().findCache(requestUrl);
             if (null == cacheEntry) {
                 // 后面逻辑会通过network去加载
