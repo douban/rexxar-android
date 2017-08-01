@@ -65,6 +65,9 @@ public class RouteManager {
      */
     private Routes mRoutes;
 
+    // test
+    private String mRouteSource = "null";
+
     /**
      * 待校验的route数据
      */
@@ -104,6 +107,10 @@ public class RouteManager {
         return mRoutes;
     }
 
+    public String getRouteSource() {
+        return mRouteSource;
+    }
+
     /**
      * 设置获取routes地址
      */
@@ -127,6 +134,7 @@ public class RouteManager {
                     String routeContent = readCachedRoutes();
                     if (!TextUtils.isEmpty(routeContent)) {
                         mRoutes = GsonHelper.getInstance().fromJson(routeContent, new TypeToken<Routes>() {}.getType());
+                        mRouteSource = "cache:" + getCachedRoutesFile().getAbsolutePath();
                     }
                 } catch (Exception e) {
                     LogUtils.i(TAG, e.getMessage());
@@ -138,6 +146,7 @@ public class RouteManager {
                         String routeContent = readPresetRoutes();
                         if (!TextUtils.isEmpty(routeContent)) {
                             mRoutes = GsonHelper.getInstance().fromJson(routeContent, new TypeToken<Routes>() {}.getType());
+                            mRouteSource = "preset";
                         }
                     } catch (Exception e) {
                         LogUtils.i(TAG, e.getMessage());
@@ -409,6 +418,7 @@ public class RouteManager {
             try {
                 mRoutes = GsonHelper.getInstance().fromJson(mCheckingRouteString, new TypeToken<Routes>() {
                 }.getType());
+                mRouteSource = "refresh";
             } catch (Exception e) {
                 LogUtils.e(TAG, e.getMessage());
             }
@@ -418,4 +428,5 @@ public class RouteManager {
             LogUtils.i(TAG, "new route effective");
         }
     }
+
 }

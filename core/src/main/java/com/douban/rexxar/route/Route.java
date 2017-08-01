@@ -2,6 +2,7 @@ package com.douban.rexxar.route;
 
 import android.text.TextUtils;
 
+import com.douban.rexxar.utils.GsonHelper;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
@@ -19,8 +20,10 @@ import java.util.regex.Pattern;
  */
 public class Route implements Serializable{
 
-    private static final long serialVersionUID = 1l;
+    private static final long serialVersionUID = 2l;
 
+    @SerializedName("deploy_time")
+    public String deployTime;
     @SerializedName("remote_file")
     public String remoteFile;
     @SerializedName("uri")
@@ -69,5 +72,10 @@ public class Route implements Serializable{
             return false;
         }
         return TextUtils.equals(this.uriRegex, ((Route) o).uriRegex);
+    }
+
+    @Override
+    public String toString() {
+        return GsonHelper.getInstance().toJson(this);
     }
 }
