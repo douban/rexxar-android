@@ -134,7 +134,7 @@ public class RouteManager {
                     String routeContent = readCachedRoutes();
                     if (!TextUtils.isEmpty(routeContent)) {
                         mRoutes = GsonHelper.getInstance().fromJson(routeContent, new TypeToken<Routes>() {}.getType());
-                        mRouteSource = "cache:" + getCachedRoutesFile().getAbsolutePath();
+                        mRouteSource = "cache:" + getCachedRoutesFile().getAbsolutePath() + ":" + mRoutes.deployTime;
                     }
                 } catch (Exception e) {
                     LogUtils.i(TAG, e.getMessage());
@@ -146,7 +146,7 @@ public class RouteManager {
                         String routeContent = readPresetRoutes();
                         if (!TextUtils.isEmpty(routeContent)) {
                             mRoutes = GsonHelper.getInstance().fromJson(routeContent, new TypeToken<Routes>() {}.getType());
-                            mRouteSource = "preset";
+                            mRouteSource = "preset" + ":" + mRoutes.deployTime;
                         }
                     } catch (Exception e) {
                         LogUtils.i(TAG, e.getMessage());
@@ -418,7 +418,7 @@ public class RouteManager {
             try {
                 mRoutes = GsonHelper.getInstance().fromJson(mCheckingRouteString, new TypeToken<Routes>() {
                 }.getType());
-                mRouteSource = "refresh";
+                mRouteSource = "refresh" + ":" + mRoutes.deployTime;
             } catch (Exception e) {
                 LogUtils.e(TAG, e.getMessage());
             }
