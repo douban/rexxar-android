@@ -92,7 +92,7 @@ public class HtmlFileCache implements ICache {
         } catch (Exception e) {
             e.printStackTrace();
             if (null != saveFile && saveFile.exists()) {
-                saveFile.exists();
+                saveFile.delete();
             }
         }
         return false;
@@ -126,7 +126,7 @@ public class HtmlFileCache implements ICache {
      *
      * @return html存储目录
      */
-    private File fileDir() {
+    public static File fileDir() {
         return new File(AppContext.getInstance().getDir(Constants.CACHE_HOME_DIR,
                 Context.MODE_PRIVATE), Constants.DEFAULT_DISK_HTML_FILE_PATH);
     }
@@ -137,7 +137,7 @@ public class HtmlFileCache implements ICache {
      * @param url html路径
      * @return html对应的存储文件
      */
-    private File file(String url) {
+    public static File file(String url) {
         String fileName = Utils.hash(url) + Constants.EXTENSION_HTML;
         return new File(fileDir(), fileName);
     }

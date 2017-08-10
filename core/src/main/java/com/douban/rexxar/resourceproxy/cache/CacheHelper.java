@@ -4,6 +4,7 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import com.douban.rexxar.Constants;
+import com.douban.rexxar.route.RouteManager;
 import com.douban.rexxar.utils.LogUtils;
 import com.douban.rexxar.utils.Utils;
 
@@ -109,11 +110,12 @@ public class CacheHelper {
         if (TextUtils.isEmpty(url)) {
             return null;
         }
+        // html地址需要去掉参数
         url = Uri.parse(url).buildUpon().clearQuery().build().toString();
         if (!checkUrl(url)) {
             return null;
         }
-        CacheEntry result;
+        CacheEntry result = null;
         // 遍历外部缓存
         for (ICache cache : mCaches) {
             result = cache.findCache(url);
@@ -123,10 +125,22 @@ public class CacheHelper {
         }
         // 遍历内部缓存
         result = mInternalHtmlCache.findCache(url);
-        if (null != result) {
-            return result;
-        }
         return result;
+    }
+
+    /**
+     * 是否缓存了
+     *
+     * @param url html地址
+     * @return
+     */
+    public boolean hasHtmlCached(String url) {
+        CacheEntry cacheEntry = findHtmlCache(url);
+        if (null != cacheEntry) {
+            cacheEntry.close();
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -259,9 +273,7 @@ public class CacheHelper {
             if (!url.contains(File.separator)) {
                 return url;
             }
-            Uri uri = Uri.parse(url);
-            String path = uri.getPath();
-            String key = Utils.hash(path);
+            String key = Utils.hash(url);
             LogUtils.i(TAG, "url : " + url + " ; key : " + key);
             return key;
         } catch (Exception e) {

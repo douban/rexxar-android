@@ -11,6 +11,8 @@ import java.util.List;
 public class Routes {
 
     public int count;
+    @SerializedName("deploy_time")
+    public String deployTime;
     // 页面rexxar uri
     public List<Route> items = new ArrayList<>();
     // 局部rexxar uri

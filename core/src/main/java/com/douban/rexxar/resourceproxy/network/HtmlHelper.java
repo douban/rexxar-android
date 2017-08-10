@@ -86,6 +86,7 @@ public class HtmlHelper {
 
     /**
      * 空闲时间下载html文件
+     * // FIXME 考虑并发问题
      */
     public static void prepareHtmlFiles(Routes routes) {
         if (null == routes || routes.isEmpty()) {
@@ -105,8 +106,7 @@ public class HtmlHelper {
         }
         for (int i = 0; i < totalSize ; i ++) {
             final Route tempRoute = validRoutes.get(i);
-            CacheEntry htmlFile = CacheHelper.getInstance().findHtmlCache(tempRoute.getHtmlFile());
-            if (null == htmlFile || !htmlFile.isValid()) {
+            if (!CacheHelper.getInstance().hasHtmlCached(tempRoute.getHtmlFile())) {
                 newRouteCount ++;
                 if (!mDownloadingProcess.contains(tempRoute.getHtmlFile())) {
                     mDownloadingProcess.add(tempRoute.getHtmlFile());
@@ -131,7 +131,6 @@ public class HtmlHelper {
                 }
             } else {
                 LogUtils.i(TAG, "download exist " + tempRoute.getHtmlFile());
-                htmlFile.close();
                 // 如果所有html文件都已经缓存了,也可以更新route
                 if (newRouteCount == 0 && i == totalSize - 1) {
                     BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_VALID, null));

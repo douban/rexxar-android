@@ -169,6 +169,7 @@ public class RexxarWebViewClient extends WebViewClient {
             final CacheEntry cacheEntry = CacheHelper.getInstance().findHtmlCache(requestUrl);
             if (null == cacheEntry) {
                 // 没有cache，显示错误界面
+                // TODO 出现了3次, 其中uri：douban:\\/\\/partial.douban.com\\/subject\\/_tv
                 RxLoadError error = RxLoadError.HTML_NO_CACHE.clone();
                 error.extra = "cacheEntry is null";
                 showError(error);
@@ -187,6 +188,7 @@ public class RexxarWebViewClient extends WebViewClient {
                     // hack 检查cache是否完整
                     if (TextUtils.isEmpty(data) || !data.endsWith("</html>")) {
                         RxLoadError error = RxLoadError.HTML_CACHE_INVALID.clone();
+                        // TODO 放到下载html的环节，确定下载成功再更新route，如果真的发生了，可以清除缓存试试
                         if (TextUtils.isEmpty(data)) {
                             error.extra = "html is empty";
                         } else {
@@ -208,7 +210,7 @@ public class RexxarWebViewClient extends WebViewClient {
         }
 
         // js直接返回
-        if (Helper.isJsResource(requestUrl)) {
+        if (CacheHelper.getInstance().cacheEnabled() && Helper.isJsResource(requestUrl)) {
             final CacheEntry cacheEntry = CacheHelper.getInstance().findCache(requestUrl);
             if (null == cacheEntry) {
                 // 后面逻辑会通过network去加载
@@ -225,8 +227,10 @@ public class RexxarWebViewClient extends WebViewClient {
                     if (TextUtils.isEmpty(data) || (cacheEntry.length > 0 && cacheEntry.length != data.getBytes().length)) {
                         RxLoadError error = RxLoadError.JS_CACHE_INVALID.clone();
                         if (TextUtils.isEmpty(data)) {
+                            // 发生0次
                             error.extra = "js is empty";
                         } else {
+                            // 发生0次
                             error.extra = "cache length : " + cacheEntry.length + "; data length : " + data.getBytes().length;
                         }
                         showError(error);
@@ -471,8 +475,9 @@ public class RexxarWebViewClient extends WebViewClient {
                 } else {
                     LogUtils.i(TAG, "load async failed :" + mUrl);
                     if (Helper.isJsResource(mUrl)) {
+                        // 如果是404的话，html加载成功了，js出错了, 是否意味着需要刷新一次route.
                         RxLoadError error = RxLoadError.JS_CACHE_INVALID.clone();
-                        error.extra = "request is fail, response code: " + response.code();
+                        error.extra = "request is fail, response code: " + response.code() + " : " + mUrl;
                         showError(error);
                         return;
                     }
@@ -513,7 +518,7 @@ public class RexxarWebViewClient extends WebViewClient {
                 LogUtils.i(TAG, "load async exception :" + mUrl + " ; " + e.getMessage());
                 if (Helper.isJsResource(mUrl)) {
                     RxLoadError error = RxLoadError.JS_CACHE_INVALID.clone();
-                    error.extra = e.getMessage();
+                    error.extra = e.getMessage() + " : " + mUrl;
                     showError(error);
                     return;
                 }
