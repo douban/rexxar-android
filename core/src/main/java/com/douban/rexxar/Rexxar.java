@@ -27,12 +27,11 @@ public class Rexxar {
      */
     private static OkHttpClient mOkHttpClient;
 
-    public static void initialize(final Context context) {
-        initialize(context, true);
-    }
-
-    public static void initialize(final Context context, boolean asyncLoadRoute) {
+    public static void initialize(final Context context, boolean asyncLoadRoute, String hostUserAgent, OkHttpClient okHttpClient, RouteManager.RouteConfig config) {
         AppContext.init(context);
+        RouteManager.config(config);
+        setHostUserAgent(hostUserAgent);
+        setOkHttpClient(okHttpClient);
         RouteManager.getInstance(asyncLoadRoute);
         ResourceProxy.getInstance();
     }

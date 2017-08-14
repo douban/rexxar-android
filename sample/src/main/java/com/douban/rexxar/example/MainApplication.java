@@ -29,19 +29,14 @@ public class MainApplication extends Application {
         super.onCreate();
 
         // 初始化rexxar
-        Rexxar.initialize(this);
+        Rexxar.initialize(this, true, " Rexxar/1.2.x com.douban.frodo/4.3 ", new OkHttpClient().newBuilder()
+                .retryOnConnectionFailure(true)
+                .addNetworkInterceptor(new AuthInterceptor())
+                .build(), new RouteManager.RouteConfig("https://raw.githubusercontent.com/douban/rexxar-web/master/example/dist/routes.json", getRouteCacheFileName()));
         Rexxar.setDebug(BuildConfig.DEBUG);
-        // 设置并刷新route
-        RouteManager.config(new RouteManager.RouteConfig("https://raw.githubusercontent.com/douban/rexxar-web/master/example/dist/routes.json", getRouteCacheFileName()));
         RouteManager.getInstance().refreshRoute(null);
         // 设置需要代理的资源
         ResourceProxy.getInstance().addProxyHosts(PROXY_HOSTS);
-        // 设置自定义的OkHttpClient
-        Rexxar.setOkHttpClient(new OkHttpClient().newBuilder()
-                .retryOnConnectionFailure(true)
-                .addNetworkInterceptor(new AuthInterceptor())
-                .build());
-        Rexxar.setHostUserAgent(" Rexxar/1.2.x com.douban.frodo/4.3 ");
     }
 
     public String getRouteCacheFileName() {
