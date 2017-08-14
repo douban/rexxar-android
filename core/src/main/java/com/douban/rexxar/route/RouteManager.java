@@ -55,8 +55,12 @@ public class RouteManager {
 
     private static RouteManager sInstance;
     private static RouteConfig sRouteConfig;
-    private RouteManager() {
-        loadLocalRoutes();
+
+    /**
+     * @param asyncLoadRoute 异步加载route, 默认为true
+     */
+    private RouteManager(boolean asyncLoadRoute) {
+        loadLocalRoutes(asyncLoadRoute);
         BusProvider.getInstance().register(this);
     }
 
@@ -93,10 +97,14 @@ public class RouteManager {
     }
 
     public static RouteManager getInstance() {
+        return getInstance(true);
+    }
+
+    public static RouteManager getInstance(boolean asyncLoadRoute) {
         if (null == sInstance) {
             synchronized (RouteManager.class) {
                 if (null == sInstance) {
-                    sInstance = new RouteManager();
+                    sInstance = new RouteManager(asyncLoadRoute);
                 }
             }
         }
@@ -124,9 +132,11 @@ public class RouteManager {
      * 加载本地的route
      * 1. 优先加载本地缓存；
      * 2. 如果没有本地缓存，则加载asset中预置的routes
+     *
+     * @param asyncLoadRoute 异步加载route, 默认为true
      */
-    private void loadLocalRoutes() {
-        TaskBuilder.create(new Callable<Void>() {
+    private void loadLocalRoutes(boolean asyncLoadRoute) {
+        Callable<Void> callable = new Callable<Void>() {
             @Override
             public Void call() throws Exception {
                 // load cached routes
@@ -155,8 +165,17 @@ public class RouteManager {
 
                 return null;
             }
-        }, new SimpleTaskCallback<Void>() {
-        }, this).start();
+        };
+        // 支持异步加载和同步加载
+        if (asyncLoadRoute) {
+            TaskBuilder.create(callable, new SimpleTaskCallback<Void>(), this).start();
+        } else {
+            try {
+                callable.call();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -295,7 +314,7 @@ public class RouteManager {
         File file = getCachedRoutesFile();
         boolean result = file.exists() && file.delete();
         if (result) {
-            loadLocalRoutes();
+            loadLocalRoutes(true);
         }
         return result;
     }
