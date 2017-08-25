@@ -1,5 +1,6 @@
 package com.douban.rexxar.view;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
@@ -7,6 +8,7 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
@@ -17,8 +19,14 @@ import com.douban.rexxar.Constants;
 import com.douban.rexxar.R;
 import com.douban.rexxar.resourceproxy.network.RexxarContainerAPI;
 import com.douban.rexxar.utils.BusProvider;
+import com.douban.rexxar.utils.LogUtils;
+import com.douban.rexxar.utils.MimeUtils;
 import com.douban.rexxar.utils.RxLoadError;
+import com.douban.rexxar.utils.Utils;
+import com.douban.rexxar.utils.io.stream.ClosedInputStream;
 
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.lang.ref.WeakReference;
 import java.util.Map;
 
@@ -387,14 +395,20 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
      * 但因为退出时要调用js方法，稍微延迟destory，所以通过主动设置一个没有实现shouldInterceptRequest的RexxarWebViewClient来避免能上面的问题。
      */
     private static class NullWebViewClient extends RexxarWebViewClient{
+
+        @TargetApi(21)
         @Override
         public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-            return null;
+            String fileExtension = MimeTypeMap.getFileExtensionFromUrl(request.getUrl().toString());
+            String mimeType = MimeUtils.guessMimeTypeFromExtension(fileExtension);
+            return new WebResourceResponse(mimeType, "UTF-8", new ClosedInputStream());
         }
 
         @Override
         public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-            return null;
+            String fileExtension = MimeTypeMap.getFileExtensionFromUrl(url);
+            String mimeType = MimeUtils.guessMimeTypeFromExtension(fileExtension);
+            return new WebResourceResponse(mimeType, "UTF-8", new ClosedInputStream());
         }
     }
 }
