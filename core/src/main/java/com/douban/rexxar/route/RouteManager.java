@@ -144,7 +144,11 @@ public class RouteManager {
                     String routeContent = readCachedRoutes();
                     if (!TextUtils.isEmpty(routeContent)) {
                         mRoutes = GsonHelper.getInstance().fromJson(routeContent, new TypeToken<Routes>() {}.getType());
-                        mRouteSource = "cache:" + getCachedRoutesFile().getAbsolutePath() + ":" + mRoutes.deployTime;
+                        mRouteSource = "cache: " + mRoutes.deployTime;
+                        File cachedRouteFile = getCachedRoutesFile();
+                        if (null != cachedRouteFile) {
+                            mRouteSource += cachedRouteFile.getAbsolutePath();
+                        }
                     }
                 } catch (Exception e) {
                     LogUtils.i(TAG, e.getMessage());
@@ -312,6 +316,9 @@ public class RouteManager {
      */
     public boolean deleteCachedRoutes() {
         File file = getCachedRoutesFile();
+        if (null == file) {
+            return false;
+        }
         boolean result = file.exists() && file.delete();
         if (result) {
             loadLocalRoutes(true);
@@ -328,6 +335,9 @@ public class RouteManager {
             @Override
             public Void call() throws Exception {
                 File file = getCachedRoutesFile();
+                if (null == file) {
+                    return null;
+                }
                 if (file.exists()) {
                     file.delete();
                 }
@@ -350,7 +360,7 @@ public class RouteManager {
      */
     private String readCachedRoutes() {
         File file = getCachedRoutesFile();
-        if (!file.exists()) {
+        if (null == file || !file.exists()) {
             return null;
         }
         try {
@@ -387,7 +397,10 @@ public class RouteManager {
         if (!fileDir.exists()) {
             fileDir.mkdirs();
         }
-        String cacheFileName = (null != sRouteConfig && !TextUtils.isEmpty(sRouteConfig.routeCacheFileName)) ? sRouteConfig.routeCacheFileName : Constants.DEFAULT_DISK_ROUTES_FILE_NAME;
+        String cacheFileName = (null != sRouteConfig && !TextUtils.isEmpty(sRouteConfig.routeCacheFileName)) ? sRouteConfig.routeCacheFileName : null;
+        if (TextUtils.isEmpty(cacheFileName)) {
+            return null;
+        }
         File file = new File(fileDir, cacheFileName);
         LogUtils.i(TAG, file.getAbsolutePath());
         return file;
