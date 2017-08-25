@@ -396,6 +396,16 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
      */
     private static class NullWebViewClient extends RexxarWebViewClient{
 
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            return true;
+        }
+
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+            return true;
+        }
+
         @TargetApi(21)
         @Override
         public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
