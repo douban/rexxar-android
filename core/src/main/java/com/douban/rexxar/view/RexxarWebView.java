@@ -1,10 +1,14 @@
 package com.douban.rexxar.view;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
@@ -212,20 +216,29 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
     }
 
     public void destroy() {
-        mSwipeRefreshLayout.removeView(mCore);
-        mCore.stopLoading();
-        // 退出时调用此方法，移除绑定的服务，否则某些特定系统会报错
-        mCore.getSettings().setJavaScriptEnabled(false);
-        mCore.clearHistory();
-        mCore.clearView();
-        mCore.removeAllViews();
+        // 调用生命周期函数
+        onPageDestroy();
+        setWebViewClient(new NullWebViewClient());
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mSwipeRefreshLayout.removeView(mCore);
+                mCore.loadUrl("about:blank");
+                mCore.stopLoading();
+                // 退出时调用此方法，移除绑定的服务，否则某些特定系统会报错
+                mCore.getSettings().setJavaScriptEnabled(false);
+                mCore.clearHistory();
+                mCore.clearView();
+                mCore.removeAllViews();
 
-        try {
-            mCore.destroy();
-        } catch (Throwable ex) {
+                try {
+                    mCore.destroy();
+                } catch (Throwable ex) {
 
-        }
-        mCore = null;
+                }
+                mCore = null;
+            }
+        }, 3000);
     }
 
     public void loadUrl(String url) {
@@ -294,6 +307,10 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
         callFunction("Rexxar.Lifecycle.onPageInvisible");
     }
 
+    public void onPageDestroy() {
+        callFunction("Rexxar.Lifecycle.onPageDestroy");
+    }
+
     @Override
     protected void onDetachedFromWindow() {
         BusProvider.getInstance().unregister(this);
@@ -357,6 +374,27 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
             jsonString = jsonString.replaceAll("(\\\\)([utrn])", "\\\\$1$2");
             jsonString = jsonString.replaceAll("(?<=[^\\\\])(\")", "\\\\\"");
             mCore.loadUrl(String.format(Constants.FUNC_FORMAT_WITH_PARAMETERS, functionName, jsonString));
+        }
+    }
+
+    /**
+     * 存在的原因
+     * 因为我们通过shouldInterceptRequest来实现拦截，经测试发现快速打开rexxar页面再退出，连续5次左右会出现rexxar页无法打开的情况;
+     * 而原生的webview不存在这个问题，经过定位发现如果不覆写shouldInterceptRequest这个方法，就不会出现这个问题。
+     *
+     * 清除WebViewClient是在WebView的destroy方法实现的，所以rexxar的webview必须尽快调用destory方法。
+     *
+     * 但因为退出时要调用js方法，稍微延迟destory，所以通过主动设置一个没有实现shouldInterceptRequest的RexxarWebViewClient来避免能上面的问题。
+     */
+    private static class NullWebViewClient extends RexxarWebViewClient{
+        @Override
+        public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+            return null;
+        }
+
+        @Override
+        public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+            return null;
         }
     }
 }
