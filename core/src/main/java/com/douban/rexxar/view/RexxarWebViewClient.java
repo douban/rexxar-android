@@ -115,9 +115,6 @@ public class RexxarWebViewClient extends WebViewClient {
         } else {
             resourceResponse = super.shouldInterceptRequest(view, request);
         }
-        if (resourceResponse == null) {
-            monitorRequestUrl(request.getUrl().toString(), null);
-        }
         return resourceResponse;
     }
 
@@ -156,7 +153,7 @@ public class RexxarWebViewClient extends WebViewClient {
      */
     protected WebResourceResponse handleResourceRequest(WebView webView, String requestUrl) {
         if (!shouldIntercept(requestUrl)) {
-            return super.shouldInterceptRequest(webView, monitorRequestUrl(requestUrl, new Throwable("should not intercept")));
+            return super.shouldInterceptRequest(webView, requestUrl);
         }
         LogUtils.i(TAG, "[handleResourceRequest] url =  " + requestUrl);
 
@@ -169,7 +166,6 @@ public class RexxarWebViewClient extends WebViewClient {
             final CacheEntry cacheEntry = CacheHelper.getInstance().findHtmlCache(requestUrl);
             if (null == cacheEntry) {
                 // 没有cache，显示错误界面
-                // TODO 出现了3次, 其中uri：douban:\\/\\/partial.douban.com\\/subject\\/_tv
                 RxLoadError error = RxLoadError.HTML_NO_CACHE.clone();
                 error.extra = "cacheEntry is null";
                 showError(error);
@@ -188,7 +184,6 @@ public class RexxarWebViewClient extends WebViewClient {
                     // hack 检查cache是否完整
                     if (TextUtils.isEmpty(data) || !data.endsWith("</html>")) {
                         RxLoadError error = RxLoadError.HTML_CACHE_INVALID.clone();
-                        // TODO 放到下载html的环节，确定下载成功再更新route，如果真的发生了，可以清除缓存试试
                         if (TextUtils.isEmpty(data)) {
                             error.extra = "html is empty";
                         } else {
@@ -272,20 +267,8 @@ public class RexxarWebViewClient extends WebViewClient {
         } catch (Throwable e) {
             e.printStackTrace();
             LogUtils.e(TAG, "url : " + requestUrl + " " + e.getMessage());
-            return super.shouldInterceptRequest(webView, monitorRequestUrl(requestUrl, e));
+            return super.shouldInterceptRequest(webView, requestUrl);
         }
-    }
-
-    /**
-     * 拦截请求失败时便于追踪
-     *
-     * @param originRequestUrl 原始请求地址
-     * @param throwable 拦截出错原因
-     *
-     * @return 包装之后的请求地址
-     */
-    protected String monitorRequestUrl(String originRequestUrl, Throwable throwable) {
-        return originRequestUrl;
     }
 
     /**
