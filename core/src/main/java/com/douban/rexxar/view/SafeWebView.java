@@ -15,7 +15,7 @@ import java.util.Map;
  *
  * Created by luanqian on 15/10/28.
  */
-public class SafeWebView extends WebView {
+public class SafeWebView extends NestedWebView {
 
     protected boolean mIsDestroy = false;
 
@@ -32,10 +32,6 @@ public class SafeWebView extends WebView {
     public SafeWebView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         removeSearchBoxJavaBridgeInterface();
-    }
-
-    public SafeWebView(Context context, AttributeSet attrs, int defStyleAttr, boolean privateBrowsing) {
-        super(context, attrs, defStyleAttr, privateBrowsing);
     }
 
     @SuppressLint("NewApi")
