@@ -56,6 +56,8 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
     private String mUri;
     private boolean mUsePage;
     private WeakReference<RexxarWebViewCore.UriLoadCallback> mUriLoadCallback = new WeakReference<RexxarWebViewCore.UriLoadCallback>(null);
+    // 加载时间
+    private long mStartLoadTime;
 
     public RexxarWebView(Context context) {
         super(context);
@@ -142,6 +144,7 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
         this.mUri = uri;
         this.mUsePage = true;
         mCore.loadUri(uri,this);
+        mStartLoadTime = System.currentTimeMillis() / 1000;
     }
 
     public void loadUri(String uri, final RexxarWebViewCore.UriLoadCallback callback) {
@@ -152,12 +155,14 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
         }
 
         mCore.loadUri(uri, this);
+        mStartLoadTime = System.currentTimeMillis() / 1000;
     }
 
     public void loadPartialUri(String uri) {
         mCore.loadPartialUri(uri);
         this.mUri = uri;
         this.mUsePage = false;
+        mStartLoadTime = System.currentTimeMillis() / 1000;
     }
 
     public void loadPartialUri(String uri, final RexxarWebViewCore.UriLoadCallback callback) {
@@ -168,6 +173,7 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
         }
 
         mCore.loadPartialUri(uri, this);
+        mStartLoadTime = System.currentTimeMillis() / 1000;
     }
 
     @Override
@@ -227,43 +233,55 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
         // 调用生命周期函数
         onPageDestroy();
         setWebViewClient(new NullWebViewClient());
-        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                mSwipeRefreshLayout.removeView(mCore);
-                mCore.loadUrl("about:blank");
-                mCore.stopLoading();
-                // 退出时调用此方法，移除绑定的服务，否则某些特定系统会报错
-                mCore.getSettings().setJavaScriptEnabled(false);
-                mCore.clearHistory();
-                mCore.clearView();
-                mCore.removeAllViews();
 
-                try {
-                    mCore.destroy();
-                } catch (Throwable ex) {
-
+        // 页面加载时间超过4s之后才可以直接销毁
+        if (System.currentTimeMillis() / 1000 - mStartLoadTime > 4) {
+            destroyWebViewCore();
+        } else {
+            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    destroyWebViewCore();
                 }
-                mCore = null;
-            }
-        }, 3000);
+            }, 3000);
+        }
+    }
+
+    private void destroyWebViewCore() {
+        try {
+            mSwipeRefreshLayout.removeView(mCore);
+            mCore.loadUrl("about:blank");
+            mCore.stopLoading();
+            // 退出时调用此方法，移除绑定的服务，否则某些特定系统会报错
+            mCore.getSettings().setJavaScriptEnabled(false);
+            mCore.clearHistory();
+            mCore.clearView();
+            mCore.removeAllViews();
+            mCore.destroy();
+        } catch (Throwable ex) {
+        }
+        mCore = null;
     }
 
     public void loadUrl(String url) {
         mCore.loadUrl(url);
+        mStartLoadTime = System.currentTimeMillis() / 1000;
     }
 
     public void loadData(String data, String mimeType, String encoding) {
         mCore.loadData(data, mimeType, encoding);
+        mStartLoadTime = System.currentTimeMillis() / 1000;
     }
 
     public void loadUrl(String url, Map<String, String> additionalHttpHeaders) {
         mCore.loadUrl(url, additionalHttpHeaders);
+        mStartLoadTime = System.currentTimeMillis() / 1000;
     }
 
     public void loadDataWithBaseURL(String baseUrl, String data, String mimeType, String encoding,
                                     String historyUrl) {
         mCore.loadDataWithBaseURL(baseUrl, data, mimeType, encoding, historyUrl);
+        mStartLoadTime = System.currentTimeMillis() / 1000;
     }
 
     public void onPause() {
