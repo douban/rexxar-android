@@ -27,7 +27,7 @@ import android.webkit.WebView;
  */
 public class NestedWebView extends WebView implements NestedScrollingChild {
     private int mLastY;
-    private final int[] mScrollOffset = new int[2];
+    private final int[] mOffsetInWindow = new int[2];
     private final int[] mScrollConsumed = new int[2];
     private int mNestedOffsetY;
     private NestedScrollingChildHelper mChildHelper;
@@ -66,24 +66,27 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
             case MotionEvent.ACTION_MOVE:
                 int deltaY = mLastY - eventY;
                 // NestedPreScroll
-                if (dispatchNestedPreScroll(0, deltaY, mScrollConsumed, mScrollOffset)) {
+                if (dispatchNestedPreScroll(0, deltaY, mScrollConsumed, mOffsetInWindow)) {
                     deltaY -= mScrollConsumed[1];
-                    mLastY = eventY - mScrollOffset[1];
-                    event.offsetLocation(0, -mScrollOffset[1]);
-                    mNestedOffsetY += mScrollOffset[1];
+                    mLastY = eventY - mOffsetInWindow[1];
+                    event.offsetLocation(0, -mOffsetInWindow[1]);
+                    mNestedOffsetY += mOffsetInWindow[1];
+                } else {
+                    mLastY = eventY;
                 }
 
                 // 当parent不能consume所有delta的时候才交给webView处理
                 if (deltaY != 0) {
+                    event.offsetLocation(0, -mNestedOffsetY);
                     returnValue = super.onTouchEvent(event);
                 }
 
                 // 只有当webView不能consume的时候才交给parent处理
                 if (getScrollY() <= 5) {
-                    if (dispatchNestedScroll(0, mScrollOffset[1], 0, deltaY, mScrollOffset)) {
-                        event.offsetLocation(0, mScrollOffset[1]);
-                        mNestedOffsetY += mScrollOffset[1];
-                        mLastY -= mScrollOffset[1];
+                    if (dispatchNestedScroll(0, mOffsetInWindow[1], 0, deltaY, mOffsetInWindow)) {
+                        event.offsetLocation(0, mOffsetInWindow[1]);
+                        mNestedOffsetY += mOffsetInWindow[1];
+                        mLastY -= mOffsetInWindow[1];
                     }
                 }
                 break;
