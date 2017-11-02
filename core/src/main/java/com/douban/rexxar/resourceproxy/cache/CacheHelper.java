@@ -6,6 +6,7 @@ import android.text.TextUtils;
 import com.douban.rexxar.Constants;
 import com.douban.rexxar.route.RouteManager;
 import com.douban.rexxar.utils.LogUtils;
+import com.douban.rexxar.utils.MD5Utils;
 import com.douban.rexxar.utils.Utils;
 
 import java.io.File;
@@ -172,7 +173,31 @@ public class CacheHelper {
         if (!checkUrl(url)) {
             return true;
         }
+        if (!checkHtmlFile(url, bytes)) {
+            LogUtils.i(TAG, "html file check fail : url: " + url + ", bytes md5: " + MD5Utils.getMd5(bytes));
+            return false;
+        }
         return mInternalHtmlCache.saveCache(url, bytes);
+    }
+
+    // 建议html文件的命名规则是：%filename%-%hash code%.html
+    private boolean checkHtmlFile(String url, byte[] bytes) {
+        String fileName = Uri.parse(url).getLastPathSegment();
+        // 不是以html为结尾的，则不进行校验
+        if (!fileName.endsWith(Constants.EXTENSION_HTML)) {
+            return true;
+        }
+        try {
+            String hashCode = fileName.split("\\.")[0].split("-")[1];
+            // 提取到hash code
+            if (!TextUtils.isEmpty(hashCode)) {
+                return MD5Utils.getMd5(bytes).startsWith(hashCode);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return true;
+        }
+        return true;
     }
 
     /**
