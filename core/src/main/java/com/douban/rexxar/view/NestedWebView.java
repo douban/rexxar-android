@@ -26,6 +26,8 @@ import android.webkit.WebView;
  * limitations under the License.
  */
 public class NestedWebView extends WebView implements NestedScrollingChild {
+
+    static final String TAG = "NestedWebView";
     private int mLastY;
     private final int[] mOffsetInWindow = new int[2];
     private final int[] mScrollConsumed = new int[2];
@@ -61,7 +63,7 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
             mNestedOffsetY = 0;
         }
         int eventY = (int) event.getY();
-        event.offsetLocation(0, mNestedOffsetY);
+        event.offsetLocation(0, -mNestedOffsetY);
         switch (action) {
             case MotionEvent.ACTION_MOVE:
                 int deltaY = mLastY - eventY;
@@ -69,25 +71,34 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
                 if (dispatchNestedPreScroll(0, deltaY, mScrollConsumed, mOffsetInWindow)) {
                     deltaY -= mScrollConsumed[1];
                     mLastY = eventY - mOffsetInWindow[1];
-                    event.offsetLocation(0, -mOffsetInWindow[1]);
                     mNestedOffsetY += mOffsetInWindow[1];
+                    event.offsetLocation(0, -mOffsetInWindow[1]);
                 } else {
                     mLastY = eventY;
                 }
 
                 // 当parent不能consume所有delta的时候才交给webView处理
-                if (deltaY != 0) {
-                    event.offsetLocation(0, -mNestedOffsetY);
+                int oldScrollY = getScrollY();
+                if ((deltaY < 0 && getScrollY() > 0) || deltaY > 0) {
                     returnValue = super.onTouchEvent(event);
                 }
 
-                // 只有当webView不能consume的时候才交给parent处理
-                if (getScrollY() <= 5) {
-                    if (dispatchNestedScroll(0, mOffsetInWindow[1], 0, deltaY, mOffsetInWindow)) {
-                        event.offsetLocation(0, mOffsetInWindow[1]);
-                        mNestedOffsetY += mOffsetInWindow[1];
-                        mLastY -= mOffsetInWindow[1];
+                // 修正deltaY
+                if (deltaY == getScrollY() - oldScrollY) {
+                    // 完全消耗完，不做处理
+                } else if (deltaY < getScrollY() - oldScrollY){
+                    // 下滑时候未消耗完
+                    if (getScrollY() <= 5) {
+                        int dyConsumed = oldScrollY - getScrollY();
+                        int dyUnconsumed = deltaY - (getScrollY() - oldScrollY);
+                        if (dispatchNestedScroll(0, dyConsumed, 0, dyUnconsumed, mOffsetInWindow)) {
+                            mNestedOffsetY += mOffsetInWindow[1];
+                            mLastY -= mOffsetInWindow[1];
+                            event.offsetLocation(0, mOffsetInWindow[1]);
+                        }
                     }
+                } else {
+                    // 上滑未消耗完，不做处理
                 }
                 break;
             case MotionEvent.ACTION_DOWN:
