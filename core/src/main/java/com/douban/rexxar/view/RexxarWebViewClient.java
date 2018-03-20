@@ -260,7 +260,7 @@ public class RexxarWebViewClient extends WebViewClient {
             webView.post(new Runnable() {
                 @Override
                 public void run() {
-                    new Thread(new ResourceRequest(url, out, in)).start();
+                    new Thread(new ResourceRequest(url, out, in, mContainerApis)).start();
                 }
             });
             return xResponse;
@@ -399,7 +399,7 @@ public class RexxarWebViewClient extends WebViewClient {
      * <p>
      * 先返回一个空的InputStream，然后再通过异步的方式向里面写数据。
      */
-    private class ResourceRequest implements Runnable {
+    private static class ResourceRequest implements Runnable {
 
         // 请求地址
         String mUrl;
@@ -407,11 +407,16 @@ public class RexxarWebViewClient extends WebViewClient {
         PipedOutputStream mOut;
         // 输入流
         PipedInputStream mTarget;
+        List<RexxarContainerAPI> mContainerAPIs;
 
-        public ResourceRequest(String url, PipedOutputStream outputStream, PipedInputStream target) {
+        public ResourceRequest(String url, PipedOutputStream outputStream, PipedInputStream target, List<RexxarContainerAPI> containerAPIs) {
             this.mUrl = url;
             this.mOut = outputStream;
             this.mTarget = target;
+            this.mContainerAPIs = new ArrayList<>();
+            if (null != containerAPIs) {
+                this.mContainerAPIs.addAll(containerAPIs);
+            }
         }
 
         @Override
@@ -433,7 +438,7 @@ public class RexxarWebViewClient extends WebViewClient {
                 // request network
                 Request request = Helper.buildRequest(mUrl);
                 // 优先用container-api处理, 如果container-api无法处理, 再去网络发出请求
-                response = RexxarContainerAPIHelper.handle(request, mContainerApis);
+                response = RexxarContainerAPIHelper.handle(request, this.mContainerAPIs);
                 if (null == response) {
                     response = ResourceProxy.getInstance().getNetwork().handle(request);
                 }
@@ -603,6 +608,13 @@ public class RexxarWebViewClient extends WebViewClient {
                 e.printStackTrace();
             }
             return new byte[0];
+        }
+
+
+        public void showError(RxLoadError error) {
+            Bundle bundle = new Bundle();
+            bundle.putParcelable(Constants.KEY_ERROR, error);
+            BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.EVENT_REXXAR_NETWORK_ERROR, bundle));
         }
     }
 }
