@@ -235,16 +235,16 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
         setWebViewClient(new NullWebViewClient());
 
         // 页面加载时间超过4s之后才可以直接销毁
-        if (System.currentTimeMillis() / 1000 - mStartLoadTime > 4) {
+//        if (System.currentTimeMillis() / 1000 - mStartLoadTime > 4) {
             destroyWebViewCore();
-        } else {
-            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    destroyWebViewCore();
-                }
-            }, 3000);
-        }
+//        } else {
+//            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//                    destroyWebViewCore();
+//                }
+//            }, 3000);
+//        }
     }
 
     private void destroyWebViewCore() {

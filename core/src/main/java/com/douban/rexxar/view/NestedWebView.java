@@ -1,16 +1,23 @@
 package com.douban.rexxar.view;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Context;
+import android.support.annotation.Keep;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.NestedScrollingChild;
 import android.support.v4.view.NestedScrollingChildHelper;
 import android.support.v4.view.ViewCompat;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
+import android.webkit.JavascriptInterface;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
+
+import com.douban.rexxar.route.RouteManager;
 
 /*
  * Copyright (C) 2015 takahirom
@@ -39,8 +46,12 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
     private int mTouchSlop;
     private boolean mNestedScrollEstablish = false;
 
+    // 是否优化横向滑动
+    private boolean mOptimizeHorizontalScroll = false;
     // 是否是横向滑动
     private boolean mScrollHorizontalEstablish = false;
+    // 是否为竖向滑动
+    private boolean mScrollVerticalEstablish = false;
     private float mLastYWebViewConsume;
 
     public NestedWebView(Context context) {
@@ -57,6 +68,13 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
         setNestedScrollingEnabled(true);
         final ViewConfiguration configuration = ViewConfiguration.get(getContext());
         mTouchSlop = configuration.getScaledTouchSlop();
+
+        WebSettings webSettings = getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        // 通过注入方法，优化横滑体验
+        addJavascriptInterface(new NestScrollHelper(), "Android_NestScrollHelper");
+        // 不过渡滑动
+        setOverScrollMode(OVER_SCROLL_NEVER);
     }
 
     @TargetApi(21)
@@ -82,9 +100,16 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
                 if (mNestedScrollEstablish) {
                     int deltaX = mLastX - eventX;
                     int deltaY = mLastY - eventY;
-                    if (!mScrollHorizontalEstablish && Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > mTouchSlop) {
-                        // 横向滑动
-                        mScrollHorizontalEstablish = true;
+                    // 如果页面有横滑操作，则可以优化
+                    if (mOptimizeHorizontalScroll) {
+                        // 如果没有确定滑动方向，则重新确定
+                        if (!mScrollHorizontalEstablish || !mScrollVerticalEstablish) {
+                            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > mTouchSlop) {
+                                mScrollHorizontalEstablish = true;
+                            } else if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > mTouchSlop) {
+                                mScrollVerticalEstablish = true;
+                            }
+                        }
                     }
                     mLastX = eventX;
                     if (mScrollHorizontalEstablish) {
@@ -108,6 +133,7 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
                             returnValue = super.onTouchEvent(event);
                             mLastYWebViewConsume = event.getY();
                         } else {
+                            // FIXME 联合滚动
                             event.offsetLocation(0, mLastYWebViewConsume - event.getY());
                             super.onTouchEvent(event);
                         }
@@ -220,6 +246,14 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
     @Override
     public boolean dispatchNestedPreFling(float velocityX, float velocityY) {
         return mChildHelper.dispatchNestedPreFling(velocityX, velocityY);
+    }
+
+    @Keep
+    private class NestScrollHelper {
+        @JavascriptInterface
+        public void optimizeHorizontalScroll() {
+            mOptimizeHorizontalScroll = true;
+        }
     }
 
 }
