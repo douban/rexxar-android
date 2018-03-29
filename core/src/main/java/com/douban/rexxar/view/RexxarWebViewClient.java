@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.webkit.MimeTypeMap;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -30,8 +31,6 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -151,7 +150,7 @@ public class RexxarWebViewClient extends WebViewClient {
      * <p>
      * <note>这个方法会在渲染线程执行，如果做了耗时操作会block渲染</note>
      */
-    protected WebResourceResponse handleResourceRequest(WebView webView, String requestUrl) {
+    protected WebResourceResponse handleResourceRequest(final WebView webView, String requestUrl) {
         if (!shouldIntercept(requestUrl)) {
             return super.shouldInterceptRequest(webView, requestUrl);
         }
@@ -246,23 +245,25 @@ public class RexxarWebViewClient extends WebViewClient {
         // 图片等其他资源使用先返回空流，异步写数据
         String fileExtension = MimeTypeMap.getFileExtensionFromUrl(requestUrl);
         String mimeType = MimeUtils.guessMimeTypeFromExtension(fileExtension);
+        CacheEntry cacheEntry = null;
+        // 静态文件缓存也直接返回，避免创建更多地线程
+        if (CacheHelper.getInstance().cacheEnabled()) {
+            cacheEntry = CacheHelper.getInstance().findCache(requestUrl);
+        }
+        if (null != cacheEntry && cacheEntry.isValid()) {
+            LogUtils.i(TAG, "file cache hit :" + requestUrl);
+            return new WebResourceResponse(mimeType, "utf-8", cacheEntry.inputStream);
+        }
+
+        // 当缓存无法命中时，启动一个线程去获取数据
         try {
             LogUtils.i(TAG, "start load async :" + requestUrl);
-            final PipedOutputStream out = new PipedOutputStream();
-            final PipedInputStream in = new PipedInputStream(out);
-            WebResourceResponse xResponse = new WebResourceResponse(mimeType, "UTF-8", in);
+            WebResourceResponse xResponse = new WebResourceResponse(mimeType, "UTF-8", new RexxarNetworkInputStream(requestUrl, mContainerApis));
             if (Utils.hasLollipop()) {
                 Map<String, String> headers = new HashMap<>();
                 headers.put("Access-Control-Allow-Origin", "*");
                 xResponse.setResponseHeaders(headers);
             }
-            final String url = requestUrl;
-            webView.post(new Runnable() {
-                @Override
-                public void run() {
-                    new Thread(new ResourceRequest(url, out, in, mContainerApis)).start();
-                }
-            });
             return xResponse;
         } catch (Throwable e) {
             e.printStackTrace();
@@ -393,143 +394,100 @@ public class RexxarWebViewClient extends WebViewClient {
 
     }
 
+    private static class RexxarNetworkInputStream extends InputStream {
 
-    /**
-     * {@link #shouldInterceptRequest(WebView, String)} 异步拦截
-     * <p>
-     * 先返回一个空的InputStream，然后再通过异步的方式向里面写数据。
-     */
-    private static class ResourceRequest implements Runnable {
+        private String url;
+        List<RexxarContainerAPI> containerAPIs;
+        private InputStream inputStream;
+        private boolean initialized=false;
 
-        // 请求地址
-        String mUrl;
-        // 输出流
-        PipedOutputStream mOut;
-        // 输入流
-        PipedInputStream mTarget;
-        List<RexxarContainerAPI> mContainerAPIs;
-
-        public ResourceRequest(String url, PipedOutputStream outputStream, PipedInputStream target, List<RexxarContainerAPI> containerAPIs) {
-            this.mUrl = url;
-            this.mOut = outputStream;
-            this.mTarget = target;
-            this.mContainerAPIs = new ArrayList<>();
+        public RexxarNetworkInputStream(String url, List<RexxarContainerAPI> containerAPIs) {
+            this.url = url;
+            this.containerAPIs = new ArrayList<>();
             if (null != containerAPIs) {
-                this.mContainerAPIs.addAll(containerAPIs);
+                this.containerAPIs.addAll(containerAPIs);
             }
         }
 
         @Override
-        public void run() {
-            Response response = null;
-            try {
-                // read cache first
-                CacheEntry cacheEntry = null;
-                if (CacheHelper.getInstance().cacheEnabled()) {
-                    cacheEntry = CacheHelper.getInstance().findCache(mUrl);
-                }
-                if (null != cacheEntry && cacheEntry.isValid()) {
-                    byte[] bytes = IOUtils.toByteArray(cacheEntry.inputStream);
-                    LogUtils.i(TAG, "load async cache hit :" + mUrl);
-                    mOut.write(bytes);
-                    return;
-                }
-
-                // request network
-                Request request = Helper.buildRequest(mUrl);
-                // 优先用container-api处理, 如果container-api无法处理, 再去网络发出请求
-                response = RexxarContainerAPIHelper.handle(request, this.mContainerAPIs);
-                if (null == response) {
-                    response = ResourceProxy.getInstance().getNetwork().handle(request);
-                }
-                // write cache
-                if (response.isSuccessful()) {
-                    InputStream inputStream = null;
-                    if (CacheHelper.getInstance().checkUrl(mUrl) && null != response.body()) {
-                        CacheHelper.getInstance().saveCache(mUrl, IOUtils.toByteArray(response.body().byteStream()));
-                        cacheEntry = CacheHelper.getInstance().findCache(mUrl);
-                        if (null != cacheEntry && cacheEntry.isValid()) {
-                            inputStream = cacheEntry.inputStream;
-                        }
-                    }
-                    if (null == inputStream && null != response.body()) {
-                        inputStream = response.body().byteStream();
-                    }
-                    // write output
-                    if (null != inputStream) {
-                        mOut.write(IOUtils.toByteArray(inputStream));
-                        LogUtils.i(TAG, "load async completed :" + mUrl);
-                    }
-                } else {
-                    LogUtils.i(TAG, "load async failed :" + mUrl);
-                    if (Helper.isJsResource(mUrl)) {
-                        // 如果是404的话，html加载成功了，js出错了, 是否意味着需要刷新一次route.
-                        RxLoadError error = RxLoadError.JS_CACHE_INVALID.clone();
-                        error.extra = "request is fail, response code: " + response.code() + " : " + mUrl;
-                        showError(error);
-                        return;
-                    }
-
-                    // return request error
-                    byte[] result = wrapperErrorResponse(response);
-                    if (Rexxar.DEBUG) {
-                        LogUtils.i(TAG, "Api Error: " + new String(result));
-                    }
-                    try {
-                        mOut.write(result);
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                }
-            } catch (SocketTimeoutException e) {
+        public int read() throws IOException {
+            if (!initialized) {
+                Log.i("xxxxxx", "start initial : " + url);
+                Response response = null;
                 try {
+                    // request network
+                    Request request = Helper.buildRequest(url);
+                    // 优先用container-api处理, 如果container-api无法处理, 再去网络发出请求
+                    response = RexxarContainerAPIHelper.handle(request, this.containerAPIs);
+                    if (null == response) {
+                        response = ResourceProxy.getInstance().getNetwork().handle(request);
+                    }
+                    // write cache
+                    if (response.isSuccessful()) {
+                        if (CacheHelper.getInstance().checkUrl(url) && null != response.body()) {
+                            CacheHelper.getInstance().saveCache(url, IOUtils.toByteArray(response.body().byteStream()));
+                            CacheEntry cacheEntry = CacheHelper.getInstance().findCache(url);
+                            if (null != cacheEntry && cacheEntry.isValid()) {
+                                this.inputStream = cacheEntry.inputStream;
+                            }
+                        }
+                        if (null == inputStream && null != response.body()) {
+                            inputStream = response.body().byteStream();
+                        } else if (null == response.body()){
+                            inputStream = IOUtils.toInputStream("{}");
+                        }
+                    } else {
+                        LogUtils.i(TAG, "load async failed :" + url);
+                        if (Helper.isJsResource(url)) {
+                            // 如果是404的话，html加载成功了，js出错了, 是否意味着需要刷新一次route.
+                            RxLoadError error = RxLoadError.JS_CACHE_INVALID.clone();
+                            error.extra = "request is fail, response code: " + response.code() + " : " + url;
+                            showError(error);
+                            initialized = true;
+                            return -1;
+                        }
+
+                        // return request error
+                        byte[] result = wrapperErrorResponse(response);
+                        if (Rexxar.DEBUG) {
+                            LogUtils.i(TAG, "Api Error: " + new String(result));
+                        }
+                        inputStream = IOUtils.toInputStream(new String(result));
+                    }
+                } catch (SocketTimeoutException e) {
                     byte[] result = wrapperErrorResponse(e);
                     if (Rexxar.DEBUG) {
                         LogUtils.i(TAG, "SocketTimeoutException: " + new String(result));
                     }
-                    mOut.write(result);
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-            } catch (ConnectTimeoutException e) {
-                byte[] result = wrapperErrorResponse(e);
-                if (Rexxar.DEBUG) {
-                    LogUtils.i(TAG, "ConnectTimeoutException: " + new String(result));
-                }
-                try {
-                    mOut.write(result);
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                LogUtils.i(TAG, "load async exception :" + mUrl + " ; " + e.getMessage());
-                if (Helper.isJsResource(mUrl)) {
-                    RxLoadError error = RxLoadError.JS_CACHE_INVALID.clone();
-                    error.extra = e.getMessage() + " : " + mUrl;
-                    showError(error);
-                    return;
-                }
-                byte[] result = wrapperErrorResponse(e);
-                if (Rexxar.DEBUG) {
-                    LogUtils.i(TAG, "Exception: " + new String(result));
-                }
-                try {
-                    mOut.write(result);
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-            } finally {
-                try {
-                    mOut.flush();
-                    mOut.close();
-                } catch (IOException e) {
+                    inputStream = IOUtils.toInputStream(new String(result));
+                } catch (ConnectTimeoutException e) {
+                    byte[] result = wrapperErrorResponse(e);
+                    if (Rexxar.DEBUG) {
+                        LogUtils.i(TAG, "ConnectTimeoutException: " + new String(result));
+                    }
+                    inputStream = IOUtils.toInputStream(new String(result));
+                } catch (Exception e) {
                     e.printStackTrace();
-                }
-                if (response != null && response.body() != null) {
-                    response.body().close();
+                    LogUtils.i(TAG, "load async exception :" + url + " ; " + e.getMessage());
+                    if (Helper.isJsResource(url)) {
+                        RxLoadError error = RxLoadError.JS_CACHE_INVALID.clone();
+                        error.extra = e.getMessage() + " : " + url;
+                        showError(error);
+                    }
+                    byte[] result = wrapperErrorResponse(e);
+                    if (Rexxar.DEBUG) {
+                        LogUtils.i(TAG, "Exception: " + new String(result));
+                    }
+                    inputStream = IOUtils.toInputStream(new String(result));
+                } finally {
+                    initialized = true;
                 }
             }
+            // 返回数据
+            if (null != inputStream) {
+                return inputStream.read();
+            }
+            return  -1;
         }
 
         private boolean responseGzip(Map<String, String> headers) {
@@ -610,11 +568,12 @@ public class RexxarWebViewClient extends WebViewClient {
             return new byte[0];
         }
 
-
         public void showError(RxLoadError error) {
             Bundle bundle = new Bundle();
             bundle.putParcelable(Constants.KEY_ERROR, error);
             BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.EVENT_REXXAR_NETWORK_ERROR, bundle));
         }
     }
+
+
 }

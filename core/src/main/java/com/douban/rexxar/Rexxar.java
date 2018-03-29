@@ -7,6 +7,8 @@ import com.douban.rexxar.resourceproxy.ResourceProxy;
 import com.douban.rexxar.route.RouteManager;
 import com.douban.rexxar.utils.AppContext;
 
+import java.util.concurrent.TimeUnit;
+
 import okhttp3.OkHttpClient;
 
 /**
@@ -73,6 +75,9 @@ public class Rexxar {
         if (null == mOkHttpClient) {
             mOkHttpClient = new OkHttpClient.Builder()
                     .retryOnConnectionFailure(false)
+                    .connectTimeout(10, TimeUnit.SECONDS)
+                    .readTimeout(10, TimeUnit.SECONDS)
+                    .writeTimeout(10, TimeUnit.SECONDS)
                     .build();
         }
         return mOkHttpClient;
