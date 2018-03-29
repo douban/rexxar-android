@@ -1,16 +1,13 @@
 package com.douban.rexxar.view;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.Keep;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.NestedScrollingChild;
 import android.support.v4.view.NestedScrollingChildHelper;
 import android.support.v4.view.ViewCompat;
-import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 import android.webkit.JavascriptInterface;
@@ -39,6 +36,7 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
     static final String TAG = "NestedWebView";
     private int mLastX;
     private int mLastY;
+    private int mFrozenX;
     private final int[] mOffsetInWindow = new int[2];
     private final int[] mScrollConsumed = new int[2];
     private int mNestedOffsetY;
@@ -96,18 +94,18 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
         event.offsetLocation(0, -mNestedOffsetY);
         switch (action) {
             case MotionEvent.ACTION_MOVE:
-                Log.i("xxxx", "action move");
                 if (mNestedScrollEstablish) {
                     int deltaX = mLastX - eventX;
                     int deltaY = mLastY - eventY;
                     // 如果页面有横滑操作，则可以优化
                     if (mOptimizeHorizontalScroll) {
                         // 如果没有确定滑动方向，则重新确定
-                        if (!mScrollHorizontalEstablish || !mScrollVerticalEstablish) {
-                            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > mTouchSlop) {
+                        if (!mScrollHorizontalEstablish && !mScrollVerticalEstablish) {
+                            if (Math.abs(deltaX) > Math.abs(deltaY) * 1.5  && Math.abs(deltaX) > mTouchSlop) {
                                 mScrollHorizontalEstablish = true;
                             } else if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > mTouchSlop) {
                                 mScrollVerticalEstablish = true;
+                                mFrozenX = eventX;
                             }
                         }
                     }
@@ -132,8 +130,7 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
                         if ((deltaY < 0 && getScrollY() > 0) || deltaY > 0) {
                             // 如果是竖向滑动，则禁止横向滑动
                             if (mScrollVerticalEstablish) {
-                                MotionEvent motionEvent = MotionEvent.obtain(event);
-                                motionEvent.offsetLocation(deltaX, 0);
+                                event.offsetLocation(mFrozenX - eventX, 0);
                                 returnValue = super.onTouchEvent(event);
                             } else {
                                 returnValue = super.onTouchEvent(event);
@@ -142,7 +139,7 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
                         } else {
                             // FIXME 联合滚动
                             if (mScrollVerticalEstablish) {
-                                event.offsetLocation(deltaX, mLastYWebViewConsume - event.getY());
+                                event.offsetLocation(mFrozenX - eventX, mLastYWebViewConsume - event.getY());
                             } else {
                                 event.offsetLocation(0, mLastYWebViewConsume - event.getY());
                             }
@@ -173,7 +170,6 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
                 }
                 break;
             case MotionEvent.ACTION_DOWN:
-                Log.i("xxxxx", "action down ：" + event.getY());
                 mLastYWebViewConsume = event.getY();
                 returnValue = super.onTouchEvent(event);
                 mLastX = eventX;
@@ -181,9 +177,9 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
                 // start NestedScroll
                 mNestedScrollEstablish = startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL);
                 mScrollHorizontalEstablish = false;
+                mScrollVerticalEstablish = false;
                 break;
             case MotionEvent.ACTION_CANCEL:
-                Log.i("xxxx", "action cancel");
                 if (mNestedScrollEstablish) {
                     returnValue = super.onTouchEvent(event);
                     // end NestedScroll
@@ -192,9 +188,10 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
                     returnValue = super.onTouchEvent(event);
                 }
                 mScrollHorizontalEstablish = false;
+                mScrollVerticalEstablish = false;
+                mFrozenX = 0;
                 break;
             case MotionEvent.ACTION_UP:
-                Log.i("xxxx", "action up");
                 if (mNestedScrollEstablish) {
                     if (mScrollHorizontalEstablish) {
                         // 横向滑动
@@ -207,6 +204,8 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
                     returnValue = super.onTouchEvent(event);
                 }
                 mScrollHorizontalEstablish = false;
+                mScrollVerticalEstablish = false;
+                mFrozenX = 0;
                 break;
         }
         return returnValue;
