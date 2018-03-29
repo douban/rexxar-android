@@ -130,11 +130,22 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
                         // 当parent不能consume所有delta的时候才交给webView处理
                         int oldScrollY = getScrollY();
                         if ((deltaY < 0 && getScrollY() > 0) || deltaY > 0) {
-                            returnValue = super.onTouchEvent(event);
+                            // 如果是竖向滑动，则禁止横向滑动
+                            if (mScrollVerticalEstablish) {
+                                MotionEvent motionEvent = MotionEvent.obtain(event);
+                                motionEvent.offsetLocation(deltaX, 0);
+                                returnValue = super.onTouchEvent(event);
+                            } else {
+                                returnValue = super.onTouchEvent(event);
+                            }
                             mLastYWebViewConsume = event.getY();
                         } else {
                             // FIXME 联合滚动
-                            event.offsetLocation(0, mLastYWebViewConsume - event.getY());
+                            if (mScrollVerticalEstablish) {
+                                event.offsetLocation(deltaX, mLastYWebViewConsume - event.getY());
+                            } else {
+                                event.offsetLocation(0, mLastYWebViewConsume - event.getY());
+                            }
                             super.onTouchEvent(event);
                         }
 
