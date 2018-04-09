@@ -4,9 +4,10 @@ buildscript {
         maven { url 'http://qaci.intra.douban.com/nexus/content/repositories/douban' }
         mavenCentral()
         jcenter()
+        maven { url 'https://maven.google.com'}
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.0'
+        classpath 'com.android.tools.build:gradle:2.3.3'
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.6'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.4.1'
     }
@@ -21,6 +22,7 @@ allprojects {
 
         mavenCentral()
         jcenter()
+        maven { url 'https://maven.google.com'}
     }
 
     tasks.withType(Javadoc) {
@@ -31,8 +33,8 @@ allprojects {
 
 
 ext {
-    compileSdkVersion = 26
-    buildToolsVersion = "26.0.1"
+    compileSdkVersion = 27
+    buildToolsVersion = "27.0.3"
     minSdkVersion = 14
     targetSdkVersion = 22
 }
