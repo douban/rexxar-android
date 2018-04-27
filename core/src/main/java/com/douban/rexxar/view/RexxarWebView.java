@@ -58,6 +58,7 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
     private WeakReference<RexxarWebViewCore.UriLoadCallback> mUriLoadCallback = new WeakReference<RexxarWebViewCore.UriLoadCallback>(null);
     // 加载时间
     private long mStartLoadTime;
+    private boolean mEnablePageAutoPageVisible = true;
 
     public RexxarWebView(Context context) {
         super(context);
@@ -295,11 +296,17 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
     @Override
     protected void onWindowVisibilityChanged(int visibility) {
         super.onWindowVisibilityChanged(visibility);
-        if (visibility == View.VISIBLE) {
-            onPageVisible();
-        } else {
-            onPageInvisible();
+        if (mEnablePageAutoPageVisible) {
+            if (visibility == View.VISIBLE) {
+                onPageVisible();
+            } else {
+                onPageInvisible();
+            }
         }
+    }
+
+    public void disableAutoPageVisible() {
+        mEnablePageAutoPageVisible = false;
     }
 
     /**
