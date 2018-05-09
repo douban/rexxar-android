@@ -9,11 +9,6 @@
         android:layout_height="match_parent"
         >
 
-        <com.douban.rexxar.view.RexxarWebViewCore
-            android:id="@+id/webview"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            />
     </com.douban.rexxar.view.SwipeRefreshLayout>
 
     <com.douban.rexxar.view.RexxarErrorView

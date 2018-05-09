@@ -4,4 +4,5 @@
     <string name="error_msg_refreshing">正在刷新</string>
     <string name="error_html_load_fail">资源加载失败</string>
     <string name="error_partial_rexxar_menu">局部rexxar页面不支持设置menu</string>
+    <string name="webview_missing">WebView组件不可用</string>
 </resources>
