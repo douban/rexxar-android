@@ -1,6 +1,7 @@
 package com.douban.rexxar.view;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
@@ -8,16 +9,19 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.douban.rexxar.Constants;
 import com.douban.rexxar.R;
 import com.douban.rexxar.resourceproxy.network.RexxarContainerAPI;
+import com.douban.rexxar.utils.AppContext;
 import com.douban.rexxar.utils.BusProvider;
 import com.douban.rexxar.utils.LogUtils;
 import com.douban.rexxar.utils.MimeUtils;
@@ -78,7 +82,18 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
     private void init() {
         LayoutInflater.from(getContext()).inflate(R.layout.view_rexxar_webview, this, true);
         mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh_layout);
-        mCore = (RexxarWebViewCore) findViewById(R.id.webview);
+        try {
+            mCore = new RexxarWebViewCore(getContext());
+            mSwipeRefreshLayout.addView(mCore, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        } catch (Exception e) {
+            e.printStackTrace();
+            // WebView missing, toast & finish activity
+            Toast.makeText(AppContext.getInstance(), R.string.webview_missing, Toast.LENGTH_SHORT).show();
+            if (null != getContext() && getContext() instanceof Activity) {
+                ((Activity) getContext()).finish();
+                return;
+            }
+        }
         mErrorView = (RexxarErrorView) findViewById(R.id.rexxar_error_view);
         mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
         BusProvider.getInstance().register(this);
@@ -134,47 +149,59 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
     /***************************设置RexxarWebViewCore的一些方法代理****************************/
 
     public void setWebViewClient(RexxarWebViewClient client) {
-        mCore.setWebViewClient(client);
+        if (null != mCore) {
+            mCore.setWebViewClient(client);
+        }
     }
 
     public void setWebChromeClient(RexxarWebChromeClient client) {
-        mCore.setWebChromeClient(client);
+        if (null != mCore) {
+            mCore.setWebChromeClient(client);
+        }
     }
 
     public void loadUri(String uri) {
-        this.mUri = uri;
-        this.mUsePage = true;
-        mCore.loadUri(uri,this);
-        mStartLoadTime = System.currentTimeMillis() / 1000;
+        if (null != mCore) {
+            this.mUri = uri;
+            this.mUsePage = true;
+            mCore.loadUri(uri,this);
+            mStartLoadTime = System.currentTimeMillis() / 1000;
+        }
     }
 
     public void loadUri(String uri, final RexxarWebViewCore.UriLoadCallback callback) {
-        this.mUri = uri;
-        this.mUsePage = true;
-        if (null != callback) {
-            this.mUriLoadCallback = new WeakReference<RexxarWebViewCore.UriLoadCallback>(callback);
-        }
+        if (null != mCore) {
+            this.mUri = uri;
+            this.mUsePage = true;
+            if (null != callback) {
+                this.mUriLoadCallback = new WeakReference<RexxarWebViewCore.UriLoadCallback>(callback);
+            }
 
-        mCore.loadUri(uri, this);
-        mStartLoadTime = System.currentTimeMillis() / 1000;
+            mCore.loadUri(uri, this);
+            mStartLoadTime = System.currentTimeMillis() / 1000;
+        }
     }
 
     public void loadPartialUri(String uri) {
-        mCore.loadPartialUri(uri);
-        this.mUri = uri;
-        this.mUsePage = false;
-        mStartLoadTime = System.currentTimeMillis() / 1000;
+        if (null != mCore) {
+            mCore.loadPartialUri(uri);
+            this.mUri = uri;
+            this.mUsePage = false;
+            mStartLoadTime = System.currentTimeMillis() / 1000;
+        }
     }
 
     public void loadPartialUri(String uri, final RexxarWebViewCore.UriLoadCallback callback) {
-        this.mUri = uri;
-        this.mUsePage = false;
-        if (null != callback) {
-            this.mUriLoadCallback = new WeakReference<RexxarWebViewCore.UriLoadCallback>(callback);
-        }
+        if (null != mCore) {
+            this.mUri = uri;
+            this.mUsePage = false;
+            if (null != callback) {
+                this.mUriLoadCallback = new WeakReference<RexxarWebViewCore.UriLoadCallback>(callback);
+            }
 
-        mCore.loadPartialUri(uri, this);
-        mStartLoadTime = System.currentTimeMillis() / 1000;
+            mCore.loadPartialUri(uri, this);
+            mStartLoadTime = System.currentTimeMillis() / 1000;
+        }
     }
 
     @Override
@@ -231,76 +258,94 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
     }
 
     public void destroy() {
-        // 调用生命周期函数
-        onPageDestroy();
-        setWebViewClient(new NullWebViewClient());
+        if (null != mCore) {
+            // 调用生命周期函数
+            onPageDestroy();
+            setWebViewClient(new NullWebViewClient());
 
-        // 页面加载时间超过4s之后才可以直接销毁
-        if (System.currentTimeMillis() / 1000 - mStartLoadTime > 4) {
-            destroyWebViewCore();
-        } else {
-            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    destroyWebViewCore();
-                }
-            }, 3000);
+            // 页面加载时间超过4s之后才可以直接销毁
+            if (System.currentTimeMillis() / 1000 - mStartLoadTime > 4) {
+                destroyWebViewCore();
+            } else {
+                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        destroyWebViewCore();
+                    }
+                }, 3000);
+            }
         }
     }
 
     private void destroyWebViewCore() {
         try {
-            mSwipeRefreshLayout.removeView(mCore);
-            mCore.loadUrl("about:blank");
-            mCore.stopLoading();
-            // 退出时调用此方法，移除绑定的服务，否则某些特定系统会报错
-            mCore.getSettings().setJavaScriptEnabled(false);
-            mCore.clearHistory();
-            mCore.clearView();
-            mCore.removeAllViews();
-            mCore.destroy();
+            if (null != mCore) {
+                mSwipeRefreshLayout.removeView(mCore);
+                mCore.loadUrl("about:blank");
+                mCore.stopLoading();
+                // 退出时调用此方法，移除绑定的服务，否则某些特定系统会报错
+                mCore.getSettings().setJavaScriptEnabled(false);
+                mCore.clearHistory();
+                mCore.clearView();
+                mCore.removeAllViews();
+                mCore.destroy();
+            }
         } catch (Throwable ex) {
         }
         mCore = null;
     }
 
     public void loadUrl(String url) {
-        mCore.loadUrl(url);
-        mStartLoadTime = System.currentTimeMillis() / 1000;
+        if (null != mCore) {
+            mCore.loadUrl(url);
+            mStartLoadTime = System.currentTimeMillis() / 1000;
+        }
     }
 
     public void loadData(String data, String mimeType, String encoding) {
-        mCore.loadData(data, mimeType, encoding);
-        mStartLoadTime = System.currentTimeMillis() / 1000;
+        if (null != mCore) {
+            mCore.loadData(data, mimeType, encoding);
+            mStartLoadTime = System.currentTimeMillis() / 1000;
+        }
     }
 
     public void loadUrl(String url, Map<String, String> additionalHttpHeaders) {
-        mCore.loadUrl(url, additionalHttpHeaders);
-        mStartLoadTime = System.currentTimeMillis() / 1000;
+        if (null != mCore) {
+            mCore.loadUrl(url, additionalHttpHeaders);
+            mStartLoadTime = System.currentTimeMillis() / 1000;
+        }
     }
 
     public void loadDataWithBaseURL(String baseUrl, String data, String mimeType, String encoding,
                                     String historyUrl) {
-        mCore.loadDataWithBaseURL(baseUrl, data, mimeType, encoding, historyUrl);
-        mStartLoadTime = System.currentTimeMillis() / 1000;
+        if (null != mCore) {
+            mCore.loadDataWithBaseURL(baseUrl, data, mimeType, encoding, historyUrl);
+            mStartLoadTime = System.currentTimeMillis() / 1000;
+        }
     }
 
     public void onPause() {
-        mCore.onPause();
+        if (null != mCore) {
+            mCore.onPause();
+        }
     }
 
     public void onResume() {
-        mCore.onResume();
+        if (null != mCore) {
+            mCore.onResume();
+        }
     }
 
     @Override
     protected void onWindowVisibilityChanged(int visibility) {
         super.onWindowVisibilityChanged(visibility);
-        if (mEnablePageAutoPageVisible) {
-            if (visibility == View.VISIBLE) {
-                onPageVisible();
-            } else {
-                onPageInvisible();
+        if (null != mCore) {
+            if (mEnablePageAutoPageVisible) {
+                if (visibility == View.VISIBLE) {
+                    onPageVisible();
+                } else {
+                    onPageInvisible();
+                }
             }
         }
     }
@@ -318,7 +363,9 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
         if (null == widget) {
             return;
         }
-        mCore.addRexxarWidget(widget);
+        if (null != mCore) {
+            mCore.addRexxarWidget(widget);
+        }
     }
 
     /**
@@ -327,7 +374,7 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
      * @param containerAPI
      */
     public void addContainerApi(RexxarContainerAPI containerAPI) {
-        if (null != containerAPI) {
+        if (null != containerAPI && null != mCore) {
             mCore.addContainerApi(containerAPI);
         }
     }
@@ -374,10 +421,12 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
      * 重新加载页面
      */
     public void reload() {
-        if (mUsePage) {
-            mCore.loadUri(mUri, this);
-        } else {
-            mCore.loadPartialUri(mUri, this);
+        if (null != mCore) {
+            if (mUsePage) {
+                mCore.loadUri(mUri, this);
+            } else {
+                mCore.loadPartialUri(mUri, this);
+            }
         }
     }
 
@@ -398,6 +447,9 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
      */
     public void callFunction(String functionName, String jsonString) {
         if (TextUtils.isEmpty(functionName)) {
+            return;
+        }
+        if (null == mCore) {
             return;
         }
         if (TextUtils.isEmpty(jsonString)) {

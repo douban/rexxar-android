@@ -1,10 +1,16 @@
 package com.douban.rexxar.view;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
+import android.text.TextUtils;
+import android.util.AndroidRuntimeException;
 import android.util.AttributeSet;
 import android.webkit.WebView;
+import android.widget.Toast;
 
+import com.douban.rexxar.R;
+import com.douban.rexxar.utils.AppContext;
 import com.douban.rexxar.utils.Utils;
 
 import java.util.Map;
@@ -53,6 +59,38 @@ public class SafeWebView extends NestedWebView {
             return;
         }
         super.loadUrl(url);
+    }
+
+    @Override
+    protected void onWindowVisibilityChanged(int visibility) {
+        try {
+            super.onWindowVisibilityChanged(visibility);
+        } catch (AndroidRuntimeException e) {
+            String message = e.getMessage();
+            if (!TextUtils.isEmpty(message) && message.contains("Failed to load WebView provider")) {
+                // WebView missing, toast & finish activity
+                Toast.makeText(AppContext.getInstance(), R.string.webview_missing, Toast.LENGTH_SHORT).show();
+                if (null != getContext() && getContext() instanceof Activity) {
+                    ((Activity) getContext()).finish();
+                }
+            }
+        }
+    }
+
+    @Override
+    public void setOverScrollMode(int mode) {
+        try {
+            super.setOverScrollMode(mode);
+        } catch (AndroidRuntimeException e) {
+            String message = e.getMessage();
+            if (!TextUtils.isEmpty(message) && message.contains("Failed to load WebView provider")) {
+                // WebView missing, toast & finish activity
+                Toast.makeText(AppContext.getInstance(), R.string.webview_missing, Toast.LENGTH_SHORT).show();
+                if (null != getContext() && getContext() instanceof Activity) {
+                    ((Activity) getContext()).finish();
+                }
+            }
+        }
     }
 
     @Override
