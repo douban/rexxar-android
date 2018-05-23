@@ -5,6 +5,7 @@ import android.annotation.TargetApi;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -13,6 +14,7 @@ import android.os.Looper;
 import android.os.Parcelable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.view.ViewGroup;
 import android.webkit.DownloadListener;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -363,5 +365,89 @@ public class RexxarWebViewCore extends SafeWebView {
         // using file schema to doLoadCache
         // 4.0的版本加载本地文件不能传递parameters，所以html文本需要替换内容
         loadUrl(Constants.FILE_AUTHORITY + route.getHtmlFile() + "?uri=" + Uri.encode(uri));
+    }
+
+    public interface WebViewHeightCallback {
+        void onHeightChange(int height);
+    }
+
+    public void addWebViewHeightCallback(WebViewHeightCallback callback) {
+        if (null != callback) {
+            mCallback = callback;
+        }
+    }
+
+    // 上次计算的内容高度，用于监测WebView高度变化
+    int mLastContentHeight;
+    // 页面是否加载完
+    protected boolean mLoadFinished = false;
+    Handler mHandler = new Handler(Looper.getMainLooper());
+    // 计算WebView高度的runnable
+    private Runnable mWebViewHeightRunnable;
+    // 需要重新设置webview的高度
+    public boolean mShouldResizeWebViewHeight = false;
+    WebViewHeightCallback mCallback;
+
+    public void enableResizeWebViewHeight(boolean enable) {
+        this.mShouldResizeWebViewHeight = enable;
+    }
+
+    /**
+     * 调整webview的高度
+     */
+    public void resizeWebView() {
+        if (null == mWebViewHeightRunnable) {
+            mWebViewHeightRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    // 重新测量webview,之后`getMeasuredHeight`的值才能准确
+                    measure(0, 0);
+                    int height = getMeasuredHeight();
+                    setWebViewHeight(height);
+                }
+            };
+        }
+        // 移除之前的设置
+        mHandler.removeCallbacks(mWebViewHeightRunnable);
+        // 重新设置定时
+        mHandler.postDelayed(mWebViewHeightRunnable, 300);
+    }
+
+
+    /**
+     * 设置webview高度
+     * @param height in pixel
+     */
+    private void setWebViewHeight(int height) {
+        // 优先用callback
+        if (null != mCallback) {
+            mCallback.onHeightChange(height);
+        }
+        // webview core
+        ViewGroup.LayoutParams layoutParams = getLayoutParams();
+        if (null == layoutParams) {
+            layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, height);
+        } else {
+            layoutParams.height = height;
+        }
+        setLayoutParams(layoutParams);
+
+        invalidate();
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        /**
+         * 当页面加载完毕后，监测webview高度发生变化时重新调整webview高度
+         */
+        if (mLoadFinished && mShouldResizeWebViewHeight) {
+            int contentHeight = getContentHeight();
+            if (contentHeight != mLastContentHeight) {
+                mLastContentHeight = contentHeight;
+                // 重新获取高度
+                resizeWebView();
+            }
+        }
     }
 }
