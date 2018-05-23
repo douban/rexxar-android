@@ -133,6 +133,12 @@ public class RexxarWebViewClient extends WebViewClient {
     public void onPageFinished(WebView view, String url) {
         super.onPageFinished(view, url);
         LogUtils.i(TAG, "onPageFinished");
+        if (view instanceof RexxarWebViewCore) {
+            ((RexxarWebViewCore) view).mLoadFinished = true;
+            if (((RexxarWebViewCore) view).mShouldResizeWebViewHeight) {
+                ((RexxarWebViewCore) view).resizeWebView();
+            }
+        }
     }
 
     @Override

@@ -40,7 +40,7 @@ import java.util.Map;
  *
  * Created by luanqian on 16/4/7.
  */
-public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriLoadCallback{
+public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriLoadCallback, RexxarWebViewCore.WebViewHeightCallback{
 
     public static final String TAG = "RexxarWebView";
 
@@ -84,6 +84,7 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
         mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh_layout);
         try {
             mCore = new RexxarWebViewCore(getContext());
+            mCore.addWebViewHeightCallback(this);
             mSwipeRefreshLayout.addView(mCore, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         } catch (Exception e) {
             e.printStackTrace();
@@ -97,6 +98,30 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
         mErrorView = (RexxarErrorView) findViewById(R.id.rexxar_error_view);
         mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
         BusProvider.getInstance().register(this);
+    }
+
+    RexxarWebViewCore.WebViewHeightCallback mCallback;
+
+    public void addWebViewHeightCallback(RexxarWebViewCore.WebViewHeightCallback callback) {
+        if (null != callback) {
+            mCallback = callback;
+        }
+    }
+
+    @Override
+    public void onHeightChange(int height) {
+        // 优先用callback
+        if (null != mCallback) {
+            mCallback.onHeightChange(height);
+        }
+        // mSwipeRefreshLayout
+        ViewGroup.LayoutParams layoutParams = mSwipeRefreshLayout.getLayoutParams();
+        if (null == layoutParams) {
+            layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, height);
+        } else {
+            layoutParams.height = height;
+        }
+        mSwipeRefreshLayout.setLayoutParams(layoutParams);
     }
 
     /**
@@ -151,6 +176,12 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
     public void setWebViewClient(RexxarWebViewClient client) {
         if (null != mCore) {
             mCore.setWebViewClient(client);
+        }
+    }
+
+    public void enableResizeWebViewHeight(boolean enable) {
+        if (null != mCore) {
+            mCore.enableResizeWebViewHeight(enable);
         }
     }
 
