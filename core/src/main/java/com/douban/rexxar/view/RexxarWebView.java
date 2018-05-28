@@ -185,6 +185,13 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
         }
     }
 
+    /**
+     * 启用/禁用 嵌套滑动
+     */
+    public void enableNestedScroll(boolean enable) {
+        mCore.enableResizeWebViewHeight(enable);
+    }
+
     public void setWebChromeClient(RexxarWebChromeClient client) {
         if (null != mCore) {
             mCore.setWebChromeClient(client);
