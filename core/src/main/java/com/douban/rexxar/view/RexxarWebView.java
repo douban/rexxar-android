@@ -187,6 +187,13 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
         }
     }
 
+    public int getWebContentHeight() {
+        if (null != mCore) {
+            return mCore.getWebViewContentHeight();
+        }
+        return 0;
+    }
+
     public void setWebViewScrollListener(RexxarWebViewCore.WebViewScrollListener scrollListener) {
         if (null != mCore) {
             mCore.setWebViewScrollListener(scrollListener);

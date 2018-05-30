@@ -104,6 +104,7 @@ public class RexxarWebViewCore extends SafeWebView {
     public interface WebCallbacks {
         void onPageLoadStarted(String url);
         void onPageLoadFinished(String url);
+        void onDraw();
     }
 
     public WeakReference<WebCallbacks> mWebCallback = null;
@@ -493,6 +494,11 @@ public class RexxarWebViewCore extends SafeWebView {
                 mLastContentHeight = contentHeight;
                 // 重新获取高度
                 resizeWebView();
+            }
+        }
+        if (mLoadFinished) {
+            if (null != mWebCallback && null != mWebCallback.get()) {
+                mWebCallback.get().onDraw();
             }
         }
     }
