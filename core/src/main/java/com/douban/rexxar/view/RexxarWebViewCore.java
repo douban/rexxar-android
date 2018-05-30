@@ -34,6 +34,7 @@ import com.douban.rexxar.utils.Utils;
 import com.douban.rexxar.utils.WebViewCompatUtils;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -100,6 +101,12 @@ public class RexxarWebViewCore extends SafeWebView {
         }
     }
 
+    public interface WebCallbacks {
+        void onPageLoadStarted(String url);
+        void onPageLoadFinished(String url);
+    }
+
+    public WeakReference<WebCallbacks> mWebCallback = null;
     private Handler mMainHandler = new Handler(Looper.getMainLooper());
     private RexxarWebViewClient mWebViewClient;
     private RexxarWebChromeClient mWebChromeClient;
@@ -385,11 +392,46 @@ public class RexxarWebViewCore extends SafeWebView {
     // 计算WebView高度的runnable
     private Runnable mWebViewHeightRunnable;
     // 需要重新设置webview的高度
-    public boolean mShouldResizeWebViewHeight = false;
+    public boolean mExpandContentHeight = false;
     WebViewHeightCallback mCallback;
 
-    public void enableResizeWebViewHeight(boolean enable) {
-        this.mShouldResizeWebViewHeight = enable;
+    /**
+     * webview撑满
+     * @param enable
+     */
+    public void enableExpandContentHeight(boolean enable) {
+        this.mExpandContentHeight = enable;
+    }
+
+    public interface WebViewScrollListener {
+        void onScrollChanged(int l, int t, int oldl, int oldt);
+    }
+
+    WeakReference<WebViewScrollListener> mWebViewScrollListener;
+
+    public void setWebViewScrollListener(WebViewScrollListener scrollListener) {
+        if (null != scrollListener) {
+            mWebViewScrollListener = new WeakReference<>(scrollListener);
+        }
+    }
+
+    @Override
+    protected void onScrollChanged(int l, int t, int oldl, int oldt) {
+        super.onScrollChanged(l, t, oldl, oldt);
+        if (null != mWebViewScrollListener && null != mWebViewScrollListener.get()) {
+            mWebViewScrollListener.get().onScrollChanged(l, t, oldl, oldt);
+        }
+    }
+
+    /**
+     * 获取webview内容高度
+     * @return
+     */
+    public int getWebViewContentHeight() {
+        if (mLoadFinished) {
+            return computeVerticalScrollRange();
+        }
+        return 0;
     }
 
     /**
@@ -413,6 +455,10 @@ public class RexxarWebViewCore extends SafeWebView {
         mHandler.postDelayed(mWebViewHeightRunnable, 300);
     }
 
+
+    public void setWebviewCallback(WebCallbacks callback) {
+        mWebCallback = new WeakReference<WebCallbacks>(callback);
+    }
 
     /**
      * 设置webview高度
@@ -441,7 +487,7 @@ public class RexxarWebViewCore extends SafeWebView {
         /**
          * 当页面加载完毕后，监测webview高度发生变化时重新调整webview高度
          */
-        if (mLoadFinished && mShouldResizeWebViewHeight) {
+        if (mLoadFinished && mExpandContentHeight) {
             int contentHeight = getContentHeight();
             if (contentHeight != mLastContentHeight) {
                 mLastContentHeight = contentHeight;

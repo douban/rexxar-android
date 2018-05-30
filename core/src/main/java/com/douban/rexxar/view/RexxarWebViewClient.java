@@ -127,6 +127,11 @@ public class RexxarWebViewClient extends WebViewClient {
     public void onPageStarted(WebView view, String url, Bitmap favicon) {
         super.onPageStarted(view, url, favicon);
         LogUtils.i(TAG, "onPageStarted");
+        if (view instanceof RexxarWebViewCore) {
+            if (null != ((RexxarWebViewCore) view).mWebCallback && null != ((RexxarWebViewCore) view).mWebCallback.get()) {
+                ((RexxarWebViewCore) view).mWebCallback.get().onPageLoadStarted(url);
+            }
+        }
     }
 
     @Override
@@ -135,8 +140,13 @@ public class RexxarWebViewClient extends WebViewClient {
         LogUtils.i(TAG, "onPageFinished");
         if (view instanceof RexxarWebViewCore) {
             ((RexxarWebViewCore) view).mLoadFinished = true;
-            if (((RexxarWebViewCore) view).mShouldResizeWebViewHeight) {
+            if (((RexxarWebViewCore) view).mExpandContentHeight) {
                 ((RexxarWebViewCore) view).resizeWebView();
+            }
+        }
+        if (view instanceof RexxarWebViewCore) {
+            if (null != ((RexxarWebViewCore) view).mWebCallback && null != ((RexxarWebViewCore) view).mWebCallback.get()) {
+                ((RexxarWebViewCore) view).mWebCallback.get().onPageLoadFinished(url);
             }
         }
     }

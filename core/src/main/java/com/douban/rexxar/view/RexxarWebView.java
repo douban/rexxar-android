@@ -23,14 +23,10 @@ import com.douban.rexxar.R;
 import com.douban.rexxar.resourceproxy.network.RexxarContainerAPI;
 import com.douban.rexxar.utils.AppContext;
 import com.douban.rexxar.utils.BusProvider;
-import com.douban.rexxar.utils.LogUtils;
 import com.douban.rexxar.utils.MimeUtils;
 import com.douban.rexxar.utils.RxLoadError;
-import com.douban.rexxar.utils.Utils;
 import com.douban.rexxar.utils.io.stream.ClosedInputStream;
 
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.lang.ref.WeakReference;
 import java.util.Map;
 
@@ -179,9 +175,21 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
         }
     }
 
-    public void enableResizeWebViewHeight(boolean enable) {
+    public void enableExpandContentHeight(boolean enable) {
         if (null != mCore) {
-            mCore.enableResizeWebViewHeight(enable);
+            mCore.enableExpandContentHeight(enable);
+        }
+    }
+
+    public void setWebviewCallback(RexxarWebViewCore.WebCallbacks callback) {
+        if (null != mCore) {
+            mCore.setWebviewCallback(callback);
+        }
+    }
+
+    public void setWebViewScrollListener(RexxarWebViewCore.WebViewScrollListener scrollListener) {
+        if (null != mCore) {
+            mCore.setWebViewScrollListener(scrollListener);
         }
     }
 
@@ -189,7 +197,7 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
      * 启用/禁用 嵌套滑动
      */
     public void enableNestedScroll(boolean enable) {
-        mCore.enableResizeWebViewHeight(enable);
+        mCore.enableNestedScroll(enable);
     }
 
     public void setWebChromeClient(RexxarWebChromeClient client) {
