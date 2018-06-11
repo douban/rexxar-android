@@ -152,7 +152,7 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
      */
     public void enableSwipeRefreshLayoutNestesScroll(boolean enable) {
         if (null != mSwipeRefreshLayout) {
-            mSwipeRefreshLayout.setNestedScrollingEnabled(false);
+            mSwipeRefreshLayout.setNestedScrollingEnabled(enable);
         }
     }
 
