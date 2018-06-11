@@ -23,14 +23,10 @@ import com.douban.rexxar.R;
 import com.douban.rexxar.resourceproxy.network.RexxarContainerAPI;
 import com.douban.rexxar.utils.AppContext;
 import com.douban.rexxar.utils.BusProvider;
-import com.douban.rexxar.utils.LogUtils;
 import com.douban.rexxar.utils.MimeUtils;
 import com.douban.rexxar.utils.RxLoadError;
-import com.douban.rexxar.utils.Utils;
 import com.douban.rexxar.utils.io.stream.ClosedInputStream;
 
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.lang.ref.WeakReference;
 import java.util.Map;
 
@@ -151,6 +147,16 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
     }
 
     /**
+     * 启用/禁用SwipeRefreshLayout
+     * @param enable
+     */
+    public void enableSwipeRefreshLayoutNestesScroll(boolean enable) {
+        if (null != mSwipeRefreshLayout) {
+            mSwipeRefreshLayout.setNestedScrollingEnabled(false);
+        }
+    }
+
+    /**
      * 启用/禁用 下拉刷新手势
      *
      * @param enable
@@ -179,10 +185,36 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
         }
     }
 
-    public void enableResizeWebViewHeight(boolean enable) {
+    public void enableExpandContentHeight(boolean enable) {
         if (null != mCore) {
-            mCore.enableResizeWebViewHeight(enable);
+            mCore.enableExpandContentHeight(enable);
         }
+    }
+
+    public void setWebviewCallback(RexxarWebViewCore.WebCallbacks callback) {
+        if (null != mCore) {
+            mCore.setWebviewCallback(callback);
+        }
+    }
+
+    public int getWebContentHeight() {
+        if (null != mCore) {
+            return mCore.getWebViewContentHeight();
+        }
+        return 0;
+    }
+
+    public void setWebViewScrollListener(RexxarWebViewCore.WebViewScrollListener scrollListener) {
+        if (null != mCore) {
+            mCore.setWebViewScrollListener(scrollListener);
+        }
+    }
+
+    /**
+     * 启用/禁用 嵌套滑动
+     */
+    public void enableNestedScroll(boolean enable) {
+        mCore.enableNestedScroll(enable);
     }
 
     public void setWebChromeClient(RexxarWebChromeClient client) {

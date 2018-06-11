@@ -52,6 +52,9 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
     private boolean mScrollVerticalEstablish = false;
     private float mLastYWebViewConsume;
 
+    // 默认开启嵌套滑动
+    private boolean mEnableNestedScroll = true;
+
     public NestedWebView(Context context) {
         this(context, null);
     }
@@ -75,6 +78,13 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
         setOverScrollMode(OVER_SCROLL_NEVER);
     }
 
+    /**
+     * 启用/禁用 嵌套滑动
+     */
+    public void enableNestedScroll(boolean enable) {
+        mEnableNestedScroll = enable;
+    }
+
     @TargetApi(21)
     public NestedWebView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
@@ -82,6 +92,9 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
 
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
+        if (!mEnableNestedScroll) {
+            return super.onTouchEvent(ev);
+        }
         boolean returnValue = false;
 
         MotionEvent event = MotionEvent.obtain(ev);
@@ -214,48 +227,73 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
     // Nested Scroll implements
     @Override
     public void setNestedScrollingEnabled(boolean enabled) {
-        mChildHelper.setNestedScrollingEnabled(enabled);
+        if (mEnableNestedScroll) {
+            mChildHelper.setNestedScrollingEnabled(enabled);
+        }
     }
 
     @Override
     public boolean isNestedScrollingEnabled() {
-        return mChildHelper.isNestedScrollingEnabled();
+        if (mEnableNestedScroll) {
+            return mChildHelper.isNestedScrollingEnabled();
+        }
+        return false;
     }
 
     @Override
     public boolean startNestedScroll(int axes) {
-        return mChildHelper.startNestedScroll(axes);
+        if (mEnableNestedScroll) {
+            return mChildHelper.startNestedScroll(axes);
+        }
+        return false;
     }
 
     @Override
     public void stopNestedScroll() {
-        mChildHelper.stopNestedScroll();
+        if (mEnableNestedScroll) {
+            mChildHelper.stopNestedScroll();
+        }
     }
 
     @Override
     public boolean hasNestedScrollingParent() {
-        return mChildHelper.hasNestedScrollingParent();
+        if (mEnableNestedScroll) {
+            return mChildHelper.hasNestedScrollingParent();
+        }
+        return false;
     }
 
     @Override
     public boolean dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed,
                                         int[] offsetInWindow) {
-        return mChildHelper.dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, offsetInWindow);
+        if (mEnableNestedScroll) {
+            return mChildHelper.dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, offsetInWindow);
+        }
+        return false;
     }
 
     @Override
     public boolean dispatchNestedPreScroll(int dx, int dy, int[] consumed, int[] offsetInWindow) {
-        return mChildHelper.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow);
+        if (mEnableNestedScroll) {
+            return mChildHelper.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow);
+        }
+        return false;
     }
 
     @Override
     public boolean dispatchNestedFling(float velocityX, float velocityY, boolean consumed) {
-        return mChildHelper.dispatchNestedFling(velocityX, velocityY, consumed);
+        if (mEnableNestedScroll) {
+            return mChildHelper.dispatchNestedFling(velocityX, velocityY, consumed);
+        }
+        return false;
     }
 
     @Override
     public boolean dispatchNestedPreFling(float velocityX, float velocityY) {
-        return mChildHelper.dispatchNestedPreFling(velocityX, velocityY);
+        if (mEnableNestedScroll) {
+            return mChildHelper.dispatchNestedPreFling(velocityX, velocityY);
+        }
+        return false;
     }
 
     @Keep
