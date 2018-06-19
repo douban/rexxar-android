@@ -9,12 +9,12 @@ import android.support.v4.view.NestedScrollingChildHelper;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.view.VelocityTracker;
 import android.view.ViewConfiguration;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-
-import com.douban.rexxar.route.RouteManager;
+import android.widget.OverScroller;
 
 /*
  * Copyright (C) 2015 takahirom
@@ -55,6 +55,15 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
     // 默认开启嵌套滑动
     private boolean mEnableNestedScroll = true;
 
+    /**
+     * Determines speed during touch scrolling
+     */
+    private VelocityTracker mVelocityTracker;
+    private int mMinimumVelocity;
+    private int mMaximumVelocity;
+    private OverScroller mScroller;
+    private int mLastScrollerY;
+
     public NestedWebView(Context context) {
         this(context, null);
     }
@@ -76,6 +85,9 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
         addJavascriptInterface(new NestScrollHelper(), "Android_NestScrollHelper");
         // 不过渡滑动
         setOverScrollMode(OVER_SCROLL_NEVER);
+        mMinimumVelocity = configuration.getScaledMinimumFlingVelocity();
+        mMaximumVelocity = configuration.getScaledMaximumFlingVelocity();
+        mScroller = new OverScroller(getContext());
     }
 
     /**
@@ -88,6 +100,21 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
     @TargetApi(21)
     public NestedWebView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
+    }
+
+    private void initOrResetVelocityTracker() {
+        if (mVelocityTracker == null) {
+            mVelocityTracker = VelocityTracker.obtain();
+        } else {
+            mVelocityTracker.clear();
+        }
+    }
+
+    private void recycleVelocityTracker() {
+        if (mVelocityTracker != null) {
+            mVelocityTracker.recycle();
+            mVelocityTracker = null;
+        }
     }
 
     @Override
@@ -108,6 +135,7 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
         switch (action) {
             case MotionEvent.ACTION_MOVE:
                 if (mNestedScrollEstablish) {
+                    mVelocityTracker.addMovement(ev);
                     int deltaX = mLastX - eventX;
                     int deltaY = mLastY - eventY;
                     // 如果页面有横滑操作，则可以优化
@@ -191,6 +219,8 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
                 mNestedScrollEstablish = startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL);
                 mScrollHorizontalEstablish = false;
                 mScrollVerticalEstablish = false;
+                initOrResetVelocityTracker();
+                mVelocityTracker.addMovement(ev);
                 break;
             case MotionEvent.ACTION_CANCEL:
                 if (mNestedScrollEstablish) {
@@ -203,6 +233,7 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
                 mScrollHorizontalEstablish = false;
                 mScrollVerticalEstablish = false;
                 mFrozenX = 0;
+                recycleVelocityTracker();
                 break;
             case MotionEvent.ACTION_UP:
                 if (mNestedScrollEstablish) {
@@ -211,17 +242,86 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
                         event.offsetLocation(0, mLastY - eventY);
                     }
                     returnValue = super.onTouchEvent(event);
-                    // end NestedScroll
-                    stopNestedScroll();
+                    final VelocityTracker velocityTracker = mVelocityTracker;
+                    velocityTracker.computeCurrentVelocity(1000, mMaximumVelocity);
+                    int initialVelocity = (int) velocityTracker.getYVelocity();
+                    if ((Math.abs(initialVelocity) > mMinimumVelocity) && getScrollY() == 0) {
+                        flingWithNestedDispatch(-initialVelocity);
+                    } else {// end NestedScroll
+                        stopNestedScroll();
+                    }
                 } else {
                     returnValue = super.onTouchEvent(event);
                 }
                 mScrollHorizontalEstablish = false;
                 mScrollVerticalEstablish = false;
                 mFrozenX = 0;
+                recycleVelocityTracker();
                 break;
         }
         return returnValue;
+    }
+
+    private void flingWithNestedDispatch(int velocityY) {
+        if (!dispatchNestedPreFling(0, velocityY)) {
+            dispatchNestedFling(0, velocityY, false);
+            fling(velocityY);
+        }
+    }
+
+    /**
+     * Fling the scroll view
+     *
+     * @param velocityY The initial velocity in the Y direction. Positive
+     *                  numbers mean that the finger/cursor is moving down the screen,
+     *                  which means we want to scroll towards the top.
+     */
+    public void fling(int velocityY) {
+        mLastScrollerY = 0;
+        flinging = true;
+        startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL);
+        mScroller.fling(0, 0, // start
+                0, velocityY, // velocities
+                0, 0, // x
+                Integer.MIN_VALUE, Integer.MAX_VALUE, // y
+                0, 0); // overscroll
+        ViewCompat.postInvalidateOnAnimation(getRootView());
+    }
+
+    private boolean flinging = false;
+
+    @Override
+    public void computeScroll() {
+        if (flinging) {
+            if (mScroller.computeScrollOffset()) {
+                final int y = mScroller.getCurrY();
+                int dy = y - mLastScrollerY;
+
+                final int[] scrollConsumedTemp = new int[2];
+                // Dispatch up to parent
+                if (dispatchNestedPreScroll(0, dy, scrollConsumedTemp, null)) {
+                    dy -= scrollConsumedTemp[1];
+                }
+
+                if (dy != 0) {
+                    dispatchNestedScroll(0, 0, 0, dy, null);
+                }
+
+                // Finally update the scroll positions and post an invalidation
+                mLastScrollerY = y;
+                ViewCompat.postInvalidateOnAnimation(this);
+            } else {
+                flinging = false;
+                // and reset the scroller y
+                mLastScrollerY = 0;
+                // We can't scroll any more, so stop any indirect scrolling
+                if (hasNestedScrollingParent()) {
+                    stopNestedScroll();
+                }
+             }
+        } else {
+            super.computeScroll();
+        }
     }
 
     // Nested Scroll implements
@@ -250,7 +350,7 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
 
     @Override
     public void stopNestedScroll() {
-        if (mEnableNestedScroll) {
+        if (mEnableNestedScroll && !flinging) {
             mChildHelper.stopNestedScroll();
         }
     }
