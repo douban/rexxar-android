@@ -424,6 +424,27 @@ public class RexxarWebViewCore extends SafeWebView {
         }
     }
 
+    public interface ReloadDelegate {
+        void onReload();
+    }
+
+    public WeakReference<ReloadDelegate> mReloadDelegateReference;
+
+    public void setReloadDelegate(ReloadDelegate reloadDelegate) {
+        if (null != reloadDelegate) {
+            mReloadDelegateReference = new WeakReference<>(reloadDelegate);
+        }
+    }
+
+    @Override
+    public void reload() {
+        if (null != mReloadDelegateReference && null != mReloadDelegateReference.get()) {
+            mReloadDelegateReference.get().onReload();
+            return;
+        }
+        super.reload();
+    }
+
     /**
      * 获取webview内容高度
      * @return
