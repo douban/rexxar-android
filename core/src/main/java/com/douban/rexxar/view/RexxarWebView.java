@@ -36,7 +36,7 @@ import java.util.Map;
  *
  * Created by luanqian on 16/4/7.
  */
-public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriLoadCallback, RexxarWebViewCore.WebViewHeightCallback{
+public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriLoadCallback, RexxarWebViewCore.WebViewHeightCallback, RexxarWebViewCore.ReloadDelegate{
 
     public static final String TAG = "RexxarWebView";
 
@@ -81,6 +81,7 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
         try {
             mCore = new RexxarWebViewCore(getContext());
             mCore.addWebViewHeightCallback(this);
+            mCore.setReloadDelegate(this);
             mSwipeRefreshLayout.addView(mCore, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         } catch (Exception e) {
             e.printStackTrace();
@@ -491,6 +492,11 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
                 mCore.loadPartialUri(mUri, this);
             }
         }
+    }
+
+    @Override
+    public void onReload() {
+        reload();
     }
 
     /**
