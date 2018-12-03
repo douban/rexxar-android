@@ -400,9 +400,25 @@ public class RexxarWebViewClient extends WebViewClient {
                     if(!Constants.KEY_METHOD.equalsIgnoreCase(key))
                         formBodyBuilder.add(key, uri.getQueryParameter(key));
                 }
-                builder.method("POST", formBodyBuilder.build()).url(requestUrl.substring(0,requestUrl.indexOf("?")));
+                builder.post(formBodyBuilder.build()).url(requestUrl.substring(0,requestUrl.indexOf("?")));
+            } if (Constants.METHOD_PUT.equalsIgnoreCase(method)) {
+                FormBody.Builder formBodyBuilder = new FormBody.Builder();
+                Set<String> names = uri.getQueryParameterNames();
+                for (String key : names) {
+                    if(!Constants.KEY_METHOD.equalsIgnoreCase(key))
+                        formBodyBuilder.add(key, uri.getQueryParameter(key));
+                }
+                builder.put(formBodyBuilder.build()).url(requestUrl.substring(0,requestUrl.indexOf("?")));
+            } if (Constants.METHOD_DELETE.equalsIgnoreCase(method)) {
+                FormBody.Builder formBodyBuilder = new FormBody.Builder();
+                Set<String> names = uri.getQueryParameterNames();
+                for (String key : names) {
+                    if(!Constants.KEY_METHOD.equalsIgnoreCase(key))
+                        formBodyBuilder.add(key, uri.getQueryParameter(key));
+                }
+                builder.delete(formBodyBuilder.build()).url(requestUrl.substring(0,requestUrl.indexOf("?")));
             } else {
-                builder.method("GET", null).url(requestUrl);
+                builder.get().url(requestUrl);
             }
             builder.addHeader("User-Agent", Rexxar.getUserAgent());
             return builder.build();

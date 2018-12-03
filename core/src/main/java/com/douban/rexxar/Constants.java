@@ -46,6 +46,10 @@ public class Constants {
     public static final String KEY_METHOD = "_rexxar_method";
     // post 请求
     public static final String METHOD_POST = "POST";
+    // put 请求
+    public static final String METHOD_PUT = "PUT";
+    // delete 请求
+    public static final String METHOD_DELETE = "DELETE";
     // get 请求
     public static final String METHOD_GET = "GET";
 
