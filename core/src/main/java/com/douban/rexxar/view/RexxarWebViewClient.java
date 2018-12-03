@@ -401,7 +401,7 @@ public class RexxarWebViewClient extends WebViewClient {
                         formBodyBuilder.add(key, uri.getQueryParameter(key));
                 }
                 builder.post(formBodyBuilder.build()).url(requestUrl.substring(0,requestUrl.indexOf("?")));
-            } if (Constants.METHOD_PUT.equalsIgnoreCase(method)) {
+            } else if (Constants.METHOD_PUT.equalsIgnoreCase(method)) {
                 FormBody.Builder formBodyBuilder = new FormBody.Builder();
                 Set<String> names = uri.getQueryParameterNames();
                 for (String key : names) {
@@ -409,7 +409,7 @@ public class RexxarWebViewClient extends WebViewClient {
                         formBodyBuilder.add(key, uri.getQueryParameter(key));
                 }
                 builder.put(formBodyBuilder.build()).url(requestUrl.substring(0,requestUrl.indexOf("?")));
-            } if (Constants.METHOD_DELETE.equalsIgnoreCase(method)) {
+            } else if (Constants.METHOD_DELETE.equalsIgnoreCase(method)) {
                 FormBody.Builder formBodyBuilder = new FormBody.Builder();
                 Set<String> names = uri.getQueryParameterNames();
                 for (String key : names) {
