@@ -4,6 +4,7 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import com.douban.rexxar.Constants;
+import com.douban.rexxar.resourceproxy.ResourceProxy;
 import com.douban.rexxar.route.RouteManager;
 import com.douban.rexxar.utils.LogUtils;
 import com.douban.rexxar.utils.MD5Utils;
@@ -185,6 +186,10 @@ public class CacheHelper {
         String fileName = Uri.parse(url).getLastPathSegment();
         // 不是以html为结尾的，则不进行校验
         if (!fileName.endsWith(Constants.EXTENSION_HTML)) {
+            return true;
+        }
+        // 如果没有启用html5校验则不检查
+        if (!RouteManager.enableHtmlMd5Check()) {
             return true;
         }
         try {

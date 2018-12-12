@@ -32,7 +32,7 @@ public class MainApplication extends Application {
         Rexxar.initialize(this, true, " Rexxar/1.2.x com.douban.frodo/4.3 ", new OkHttpClient().newBuilder()
                 .retryOnConnectionFailure(true)
                 .addNetworkInterceptor(new AuthInterceptor())
-                .build(), new RouteManager.RouteConfig("https://raw.githubusercontent.com/douban/rexxar-web/master/example/dist/routes.json", getRouteCacheFileName()));
+                .build(), new RouteManager.RouteConfig("https://raw.githubusercontent.com/douban/rexxar-web/master/example/dist/routes.json", getRouteCacheFileName(), true));
         Rexxar.setDebug(BuildConfig.DEBUG);
         RouteManager.getInstance().refreshRoute(null);
         // 设置需要代理的资源
