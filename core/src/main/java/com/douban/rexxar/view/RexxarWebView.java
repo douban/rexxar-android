@@ -3,6 +3,7 @@ package com.douban.rexxar.view;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
@@ -528,7 +529,12 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
             jsonString = jsonString.replaceAll("(\\\\)([utrn])", "\\\\$1$2");
             jsonString = jsonString.replaceAll("(?<=[^\\\\])(\")", "\\\\\"");
             jsonString = jsonString.replaceAll("(?<=[^\\\\])(\')", "\\\\\'");
-            mCore.loadUrl(String.format(Constants.FUNC_FORMAT_WITH_PARAMETERS, functionName, jsonString));
+            String command = String.format(Constants.FUNC_FORMAT_WITH_PARAMETERS, functionName, jsonString);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                mCore.evaluateJavascript(command, null);
+            } else {
+                mCore.loadUrl(String.format(Constants.FUNC_FORMAT_WITH_PARAMETERS, functionName, jsonString));
+            }
         }
     }
 
