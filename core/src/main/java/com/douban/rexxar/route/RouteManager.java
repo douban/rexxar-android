@@ -33,10 +33,12 @@ public class RouteManager {
     public static class RouteConfig {
         public String routeApi;
         public String routeCacheFileName;
+        public boolean enableHtmlMd5Check;
 
-        public RouteConfig(String routeApi, String cacheFileName) {
+        public RouteConfig(String routeApi, String cacheFileName, boolean enableHtmlMd5Check) {
             this.routeApi = routeApi;
             this.routeCacheFileName = cacheFileName;
+            this.enableHtmlMd5Check = enableHtmlMd5Check;
         }
     }
 
@@ -117,6 +119,13 @@ public class RouteManager {
 
     public String getRouteSource() {
         return mRouteSource;
+    }
+
+    public static boolean enableHtmlMd5Check() {
+        if (null != sRouteConfig) {
+            return sRouteConfig.enableHtmlMd5Check;
+        }
+        return true;
     }
 
     /**
