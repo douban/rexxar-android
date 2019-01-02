@@ -531,7 +531,11 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
             jsonString = jsonString.replaceAll("(?<=[^\\\\])(\')", "\\\\\'");
             String command = String.format(Constants.FUNC_FORMAT_WITH_PARAMETERS, functionName, jsonString);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                mCore.evaluateJavascript(command, null);
+                try {
+                    mCore.evaluateJavascript(command, null);
+                } catch (Exception e) {
+                    mCore.loadUrl(String.format(Constants.FUNC_FORMAT_WITH_PARAMETERS, functionName, jsonString));
+                }
             } else {
                 mCore.loadUrl(String.format(Constants.FUNC_FORMAT_WITH_PARAMETERS, functionName, jsonString));
             }
