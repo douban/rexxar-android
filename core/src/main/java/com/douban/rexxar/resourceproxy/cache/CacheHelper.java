@@ -83,8 +83,13 @@ public class CacheHelper {
             return null;
         }
         // 如果是html文件，则查找html缓存
-        if (url.contains(Constants.EXTENSION_HTML)) {
-            return findHtmlCache(url);
+        try {
+            String lastPathSegment = Uri.parse(url).getLastPathSegment();
+            if (lastPathSegment.contains(Constants.EXTENSION_HTML)) {
+                return findHtmlCache(url);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         CacheEntry result = null;
         // 遍历内部缓存
