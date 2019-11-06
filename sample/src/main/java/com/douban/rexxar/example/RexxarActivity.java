@@ -22,8 +22,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.InjectView;
 
 /**
  * Created by luanqian on 16/9/26.
@@ -38,7 +38,7 @@ public class RexxarActivity extends AppCompatActivity {
         activity.startActivity(intent);
     }
 
-    @InjectView(R.id.webView)
+    @BindView(R.id.webView)
     RexxarWebView mRexxarWebView;
 
     private List<MenuItem> mMenuItems = new ArrayList<>();
@@ -47,7 +47,7 @@ public class RexxarActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.rexxar_activity);
-        ButterKnife.inject(this);
+        ButterKnife.bind(this);
         setTitle(R.string.title_rexxar);
 
         String uri = getIntent().getData().toString();

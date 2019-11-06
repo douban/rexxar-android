@@ -128,7 +128,7 @@ public class RexxarWebViewCore extends SafeWebView {
     }
 
     private void setup() {
-        setBackgroundColor(Color.WHITE);
+        setBackgroundColor(Color.TRANSPARENT);
         WebSettings ws = getSettings();
         setupWebSettings(ws);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
