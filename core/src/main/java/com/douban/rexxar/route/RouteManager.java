@@ -289,12 +289,10 @@ public class RouteManager {
      * @param callback
      */
     public void refreshRouteFast(final RouteRefreshCallback callback) {
-        mRouteRefreshCallback = callback;
         RouteFetcher.fetchRoutes(new RouteRefreshCallback() {
             @Override
             public void onSuccess(String data) {
                 try {
-                    mCheckingRouteString = null;
                     saveCachedRoutes(data);
                     mRoutes = GsonHelper.getInstance().fromJson(data, new TypeToken<Routes>() {
                     }.getType());
@@ -436,7 +434,7 @@ public class RouteManager {
         if (null == callback) {
             return;
         }
-        RouteManager.getInstance().refreshRoute(new RouteManager.RouteRefreshCallback() {
+        RouteManager.getInstance().refreshRouteFast(new RouteManager.RouteRefreshCallback() {
             @Override
             public void onSuccess(String data) {
                 callback.onResult(handleByNative(uri));

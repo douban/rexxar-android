@@ -298,7 +298,7 @@ public class RexxarWebViewCore extends SafeWebView {
      * <p>
      * 如果map能够匹配上，则
      */
-    private void loadUri(final String uri, final UriLoadCallback callback, boolean page) {
+    private void loadUri(final String uri, final UriLoadCallback callback, final boolean page) {
         LogUtils.i(TAG, "loadUri , uri = " + (null != uri ? uri : "null"));
         if (TextUtils.isEmpty(uri)) {
             throw new IllegalArgumentException("[RexxarWebView] [loadUri] uri can not be null");
@@ -311,60 +311,79 @@ public class RexxarWebViewCore extends SafeWebView {
         }
         if (null == route) {
             LogUtils.i(TAG, "route not found");
-            if (null != callback) {
-                callback.onFail(RxLoadError.ROUTE_NOT_FOUND);
-            }
-            return;
-        }
-        if (null != callback) {
-            callback.onStartLoad();
-        }
-        if (CacheHelper.getInstance().cacheEnabled() && CacheHelper.getInstance().hasHtmlCached(route.getHtmlFile())) {
-            // show cache
-            doLoadCache(uri, route);
-            if (null != callback) {
-                callback.onSuccess();
-            }
-        } else {
-            if (null != callback) {
-                callback.onStartDownloadHtml();
-            }
-            HtmlHelper.prepareHtmlFile(route.getHtmlFile(), new Callback() {
+            RouteManager.getInstance().refreshRouteFast(new RouteManager.RouteRefreshCallback() {
                 @Override
-                public void onFailure(Call call, IOException e) {
-                    if (null != callback) {
-                        RxLoadError error = RxLoadError.HTML_DOWNLOAD_FAIL;
-                        error.extra = route.getHtmlFile();
-                        callback.onFail(error);
+                public void onSuccess(String data) {
+                    Route temp = page ? RouteManager.getInstance().findRoute(uri) : RouteManager.getInstance().findPartialRoute(uri);
+                    if (null == temp) {
+                        // 没有找到通知外面route找不到
+                        if (null != callback) {
+                            callback.onFail(RxLoadError.ROUTE_NOT_FOUND);
+                        }
+                    } else {
+                        // 如果找到重新加载
+                        loadUri(uri, callback, page);
                     }
                 }
 
                 @Override
-                public void onResponse(Call call, final Response response) throws IOException {
-                    mMainHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (response.isSuccessful()) {
-                                LogUtils.i(TAG, "download success");
-                                final CacheEntry cacheEntry = CacheHelper.getInstance().findHtmlCache(route.getHtmlFile());
-                                if (null != cacheEntry && cacheEntry.isValid()) {
-                                    // show cache
-                                    doLoadCache(uri, route);
-                                    if (null != callback) {
-                                        callback.onSuccess();
-                                    }
-                                }
-                            } else {
-                                if (null != callback) {
-                                    RxLoadError error = RxLoadError.HTML_DOWNLOAD_FAIL;
-                                    error.extra = route.getHtmlFile();
-                                    callback.onFail(error);
-                                }
-                            }
-                        }
-                    });
+                public void onFail() {
+                    if (null != callback) {
+                        callback.onFail(RxLoadError.ROUTE_NOT_FOUND);
+                    }
                 }
             });
+        } else {
+            if (null != callback) {
+                callback.onStartLoad();
+            }
+            if (CacheHelper.getInstance().cacheEnabled() && CacheHelper.getInstance().hasHtmlCached(route.getHtmlFile())) {
+                // show cache
+                doLoadCache(uri, route);
+                if (null != callback) {
+                    callback.onSuccess();
+                }
+            } else {
+                if (null != callback) {
+                    callback.onStartDownloadHtml();
+                }
+                HtmlHelper.prepareHtmlFile(route.getHtmlFile(), new Callback() {
+                    @Override
+                    public void onFailure(Call call, IOException e) {
+                        if (null != callback) {
+                            RxLoadError error = RxLoadError.HTML_DOWNLOAD_FAIL;
+                            error.extra = route.getHtmlFile();
+                            callback.onFail(error);
+                        }
+                    }
+
+                    @Override
+                    public void onResponse(Call call, final Response response) throws IOException {
+                        mMainHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (response.isSuccessful()) {
+                                    LogUtils.i(TAG, "download success");
+                                    final CacheEntry cacheEntry = CacheHelper.getInstance().findHtmlCache(route.getHtmlFile());
+                                    if (null != cacheEntry && cacheEntry.isValid()) {
+                                        // show cache
+                                        doLoadCache(uri, route);
+                                        if (null != callback) {
+                                            callback.onSuccess();
+                                        }
+                                    }
+                                } else {
+                                    if (null != callback) {
+                                        RxLoadError error = RxLoadError.HTML_DOWNLOAD_FAIL;
+                                        error.extra = route.getHtmlFile();
+                                        callback.onFail(error);
+                                    }
+                                }
+                            }
+                        });
+                    }
+                });
+            }
         }
     }
 
