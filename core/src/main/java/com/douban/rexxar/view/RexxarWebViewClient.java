@@ -303,7 +303,7 @@ public class RexxarWebViewClient extends WebViewClient {
      * @param requestUrl
      * @return
      */
-    private boolean shouldIntercept(String requestUrl) {
+    protected boolean shouldIntercept(String requestUrl) {
         if (TextUtils.isEmpty(requestUrl)) {
             return false;
         }
@@ -344,6 +344,7 @@ public class RexxarWebViewClient extends WebViewClient {
                 return true;
             }
         }
+
         return false;
     }
 
