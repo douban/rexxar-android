@@ -263,6 +263,18 @@ public class RouteManager {
                 // prepare html files
                 try {
                     Routes routes = GsonHelper.getInstance().fromJson(mCheckingRouteString, Routes.class);
+                    if (null == routes) {
+                        if (null != callback) {
+                            callback.onFail();
+                        }
+                        return;
+                    }
+                    if (null != mRoutes && !mRoutes.before(routes)) {
+                        if (null != callback) {
+                            callback.onFail();
+                        }
+                        return;
+                    }
                     ResourceProxy.getInstance().prepareHtmlFiles(routes);
                 } catch (Exception e) {
                     // FIXME: 解析失败，不会更新
