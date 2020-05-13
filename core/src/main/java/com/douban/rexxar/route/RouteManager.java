@@ -305,9 +305,23 @@ public class RouteManager {
             @Override
             public void onSuccess(String data) {
                 try {
-                    saveCachedRoutes(data);
-                    mRoutes = GsonHelper.getInstance().fromJson(data, new TypeToken<Routes>() {
+                    Routes newRoutes = GsonHelper.getInstance().fromJson(data, new TypeToken<Routes>() {
                     }.getType());
+                    if (null == newRoutes) {
+                        if (null != callback) {
+                            callback.onFail();
+                        }
+                        return;
+                    }
+                    if (null != mRoutes && !mRoutes.before(newRoutes)) {
+                        if (null != callback) {
+                            callback.onFail();
+                        }
+                        return;
+                    }
+                    // save routes
+                    saveCachedRoutes(data);
+                    mRoutes = newRoutes;
                     if (null != callback) {
                         callback.onSuccess(data);
                     }

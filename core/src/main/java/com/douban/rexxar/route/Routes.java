@@ -48,7 +48,7 @@ public class Routes {
             return true;
         }
 
-        SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM YYYY HH:mm:ss 'GTM'",
+        SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss 'GMT'",
                 Locale.ENGLISH);
         try {
             Date oldRouteDate = format.parse(deployTime);
