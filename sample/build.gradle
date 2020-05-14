@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.jakewharton.butterknife'
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -15,10 +16,24 @@ android {
     lintOptions {
         abortOnError false
     }
+
+    dexOptions {
+        javaMaxHeapSize "4g"
+        preDexLibraries = false
+        jumboMode = true
+        dexInProcess= true
+        threadCount = 6
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile(project(':core'))
-    compile 'com.jakewharton:butterknife:6.1.0'
+    implementation "com.jakewharton:butterknife:10.1.0"
+    annotationProcessor "com.jakewharton:butterknife-compiler:10.1.0"
 }

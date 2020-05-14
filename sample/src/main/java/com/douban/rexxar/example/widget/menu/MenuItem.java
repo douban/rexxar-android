@@ -3,13 +3,14 @@ package com.douban.rexxar.example.widget.menu;
 import android.content.Context;
 import android.graphics.Color;
 import android.net.Uri;
-import android.support.annotation.Keep;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.Keep;
 
 import com.douban.rexxar.example.R;
 

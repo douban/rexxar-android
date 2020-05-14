@@ -1,6 +1,6 @@
 package com.douban.rexxar.example.widget.menu;
 
-import android.support.annotation.Keep;
+import androidx.annotation.Keep;
 
 /**
  * Created by luanqian on 15/11/24.

@@ -1,20 +1,18 @@
 package com.douban.rexxar.example;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.douban.rexxar.example.widget.AlertDialogWidget;
-import com.douban.rexxar.example.widget.TitleWidget;
-import com.douban.rexxar.example.widget.ToastWidget;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.douban.rexxar.resourceproxy.ResourceProxy;
 
+import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.InjectView;
 
 /**
  * Created by luanqian on 15/10/28.
@@ -23,16 +21,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public static final String TAG = MainActivity.class.getSimpleName();
 
-    @InjectView(R.id.rexxar_page)
+    @BindView(R.id.rexxar_page)
     public TextView mRexxarButton;
-    @InjectView(R.id.partial_rexxar_page)
+    @BindView(R.id.partial_rexxar_page)
     public TextView mPartialRexxarButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
-        ButterKnife.inject(this);
+        ButterKnife.bind(this);
         mRexxarButton.setOnClickListener(this);
         mPartialRexxarButton.setOnClickListener(this);
     }

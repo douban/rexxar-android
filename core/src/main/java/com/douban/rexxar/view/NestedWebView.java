@@ -2,11 +2,6 @@ package com.douban.rexxar.view;
 
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.support.annotation.Keep;
-import android.support.v4.view.MotionEventCompat;
-import android.support.v4.view.NestedScrollingChild;
-import android.support.v4.view.NestedScrollingChildHelper;
-import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
@@ -15,6 +10,12 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.OverScroller;
+
+import androidx.annotation.Keep;
+import androidx.core.view.MotionEventCompat;
+import androidx.core.view.NestedScrollingChild;
+import androidx.core.view.NestedScrollingChildHelper;
+import androidx.core.view.ViewCompat;
 
 /*
  * Copyright (C) 2015 takahirom

@@ -3,9 +3,11 @@ package com.douban.rexxar.example.widget;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.net.Uri;
-import android.support.annotation.Keep;
 import android.text.TextUtils;
 import android.webkit.WebView;
+
+import androidx.annotation.Keep;
+import androidx.appcompat.app.AlertDialog;
 
 import com.douban.rexxar.utils.GsonHelper;
 import com.douban.rexxar.view.RexxarWidget;
@@ -66,7 +68,7 @@ public class AlertDialogWidget implements RexxarWidget {
         if (activity.isFinishing()) {
             return false;
         }
-        android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(activity)
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity)
                 .setTitle(data.title)
                 .setMessage(data.message)
                 // 不可消失

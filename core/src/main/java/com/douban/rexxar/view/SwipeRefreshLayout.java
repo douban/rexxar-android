@@ -8,7 +8,7 @@ import android.view.ViewConfiguration;
 import com.douban.rexxar.R;
 import com.douban.rexxar.utils.AppContext;
 
-public class SwipeRefreshLayout extends android.support.v4.widget.SwipeRefreshLayout {
+public class SwipeRefreshLayout extends androidx.swiperefreshlayout.widget.SwipeRefreshLayout {
 
     private int mTouchSlop;
     private float mPrevX;

@@ -128,7 +128,7 @@ public class RexxarWebView extends FrameLayout implements RexxarWebViewCore.UriL
      */
     public void setOnRefreshListener(final OnRefreshListener listener) {
         if (null != listener) {
-            mSwipeRefreshLayout.setOnRefreshListener(new android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener() {
+            mSwipeRefreshLayout.setOnRefreshListener(new androidx.swiperefreshlayout.widget.SwipeRefreshLayout.OnRefreshListener() {
                 @Override
                 public void onRefresh() {
                     listener.onRefresh();
