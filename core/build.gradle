@@ -32,4 +32,5 @@ dependencies {
     compile 'com.google.code.gson:gson:2.8.2'
     compile 'de.greenrobot:eventbus:2.4.1'
 }
-apply from: 'bintray.gradle'
+//apply from: 'bintray.gradle'
+apply from: '../gradle-mvn-push.gradle'
