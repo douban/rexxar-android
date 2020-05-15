@@ -40,6 +40,6 @@ public class Routes {
         if (null == routes) {
             return false;
         }
-        return this.releaseId < routes.releaseId;
+        return this.releaseId <= routes.releaseId;
     }
 }
