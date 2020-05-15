@@ -1,15 +1,9 @@
 package com.douban.rexxar.route;
 
-import android.text.TextUtils;
-
 import com.google.gson.annotations.SerializedName;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Created by luanqian on 15/12/23.
@@ -19,6 +13,8 @@ public class Routes {
     public int count;
     @SerializedName("deploy_time")
     public String deployTime;
+    @SerializedName("release_id")
+    public long releaseId;
     // 页面rexxar uri
     public List<Route> items = new ArrayList<>();
     // 局部rexxar uri
@@ -44,19 +40,6 @@ public class Routes {
         if (null == routes) {
             return false;
         }
-        if (TextUtils.isEmpty(routes.deployTime) || TextUtils.isEmpty(deployTime)){
-            return true;
-        }
-
-        SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss 'GMT'",
-                Locale.ENGLISH);
-        try {
-            Date oldRouteDate = format.parse(deployTime);
-            Date newRouteDate = format.parse(routes.deployTime);
-            return oldRouteDate.before(newRouteDate);
-        } catch (ParseException e) {
-            e.printStackTrace();
-            return true;
-        }
+        return this.releaseId < routes.releaseId;
     }
 }
