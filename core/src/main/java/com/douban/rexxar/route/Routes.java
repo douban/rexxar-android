@@ -40,6 +40,10 @@ public class Routes {
         if (null == routes) {
             return false;
         }
+        // 但凡有一个release_id为0，则都会自动升级
+        if (releaseId == 0 || routes.releaseId == 0) {
+            return true;
+        }
         return this.releaseId <= routes.releaseId;
     }
 }
