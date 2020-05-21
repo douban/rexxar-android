@@ -8,6 +8,7 @@ import com.douban.rexxar.utils.AppContext;
 import com.douban.rexxar.utils.LogUtils;
 import com.douban.rexxar.utils.Utils;
 import com.douban.rexxar.utils.io.IOUtils;
+import com.jakewharton.disklrucache.DiskLruCache;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -32,35 +33,33 @@ public class HtmlFileCache implements ICache {
 
     public static final String TAG = "HtmlFileCache";
 
+    private DiskLruCache mDiskCache;
+
     public HtmlFileCache() {
+        File directory = new File(AppContext.getInstance().getDir(Constants.CACHE_HOME_DIR,
+                Context.MODE_PRIVATE), Constants.DEFAULT_DISK_FILE_PATH + "_html");
+        try {
+            mDiskCache = DiskLruCache.open(directory, Constants.VERSION, 2,
+                    Constants.CACHE_SIZE);
+        } catch (IOException e) {
+            LogUtils.e(TAG, e.getMessage());
+        }
     }
 
     @Override
     public CacheEntry findCache(String url) {
-        if (TextUtils.isEmpty(url)) {
-            return null;
-        }
-        File file = file(url);
-        if (file.exists() && file.canRead()) {
-            try {
-                FileInputStream fileInputStream = new FileInputStream(file);
-                byte[] bytes = IOUtils.toByteArray(fileInputStream);
-                CacheEntry cacheEntry = new CacheEntry(file.length(), new ByteArrayInputStream(bytes));
-                fileInputStream.close();
-                LogUtils.i(TAG, "hit");
-                return cacheEntry;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return null;
+        return getCache(url);
     }
 
     @Override
     public boolean removeCache(String url) {
-        LogUtils.i(TAG, "remove cache  : url " + url);
-        File file = file(url);
-        return file.exists() && file.delete();
+        try {
+            LogUtils.i(TAG, "remove cache  : url " + url);
+            return mDiskCache.remove(CacheHelper.getInstance().urlToKey(url));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     /**
@@ -70,75 +69,92 @@ public class HtmlFileCache implements ICache {
      * @param bytes html数据
      */
     public boolean saveCache(String url, byte[] bytes) {
-        if (TextUtils.isEmpty(url) || null == bytes || bytes.length == 0) {
+        if (TextUtils.isEmpty(url) || null == mDiskCache) {
             return false;
         }
-        File fileDir = fileDir();
-        if (!fileDir.exists()) {
-            if (!fileDir.mkdirs()) {
-                return false;
-            }
-        }
+        DiskLruCache.Editor editor = null;
+        String key = CacheHelper.getInstance().urlToKey(url);
         // 如果存在，则先删掉之前的缓存
         removeCache(url);
-        File saveFile = null;
+        OutputStream outputStream = null;
         try {
-            saveFile = file(url);
-            OutputStream outputStream = new FileOutputStream(saveFile);
+            editor = mDiskCache.edit(key);
+            if (null == editor) {
+                return false;
+            }
+            editor.set(0, String.valueOf(bytes.length));
+            outputStream = editor.newOutputStream(1);
             outputStream.write(bytes);
             outputStream.flush();
-            outputStream.close();
+            editor.commit();
+            editor = null;
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
-            if (null != saveFile && saveFile.exists()) {
-                saveFile.delete();
+            LogUtils.e(TAG, e.getMessage());
+            try {
+                mDiskCache.remove(key);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+        } finally {
+            if (null != editor) {
+                try {
+                    editor.commit();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (null != outputStream) {
+                try {
+                    outputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
         return false;
     }
 
-    /**
-     * 清除html缓存
-     *
-     * @return whether clear cache successfully
-     */
-    public boolean clear() {
-        File htmlDir = fileDir();
-        if (!htmlDir.exists()) {
-            return true;
+    public CacheEntry getCache(String url) {
+        if (TextUtils.isEmpty(url) || null == mDiskCache) {
+            return null;
         }
-        File[] htmlFiles = htmlDir.listFiles();
-        if (null == htmlFiles) {
-            return true;
-        }
-        boolean processed = true;
-        for (File file : htmlFiles) {
-            if (!file.delete()) {
-                processed = false;
+        InputStream inputStream = null;
+        try {
+            DiskLruCache.Snapshot snapshot = mDiskCache.get(
+                    CacheHelper.getInstance().urlToKey(url));
+            if (null == snapshot) {
+                return null;
+            }
+            LogUtils.i(TAG, "hit");
+            long length = 0;
+            String storedLength = snapshot.getString(0);
+            if (!TextUtils.isEmpty(storedLength)) {
+                length = Long.parseLong(storedLength);
+            }
+            inputStream = snapshot.getInputStream(1);
+            return new CacheEntry(length, new ByteArrayInputStream(IOUtils.toByteArray(inputStream)));
+        } catch (Exception e) {
+            LogUtils.e(TAG, e.getMessage());
+        } finally {
+            if (null != inputStream) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
-        return processed;
+        return null;
     }
 
-    /**
-     * html存储目录
-     *
-     * @return html存储目录
-     */
-    public static File fileDir() {
-        return new File(AppContext.getInstance().getDir(Constants.CACHE_HOME_DIR,
-                Context.MODE_PRIVATE), Constants.DEFAULT_DISK_HTML_FILE_PATH);
-    }
-
-    /**
-     * 单个html存储文件路径
-     *
-     * @param url html路径
-     * @return html对应的存储文件
-     */
-    public static File file(String url) {
-        String fileName = Utils.hash(url) + Constants.EXTENSION_HTML;
-        return new File(fileDir(), fileName);
+    public void clear() {
+        if (null != mDiskCache) {
+            try {
+                mDiskCache.delete();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
