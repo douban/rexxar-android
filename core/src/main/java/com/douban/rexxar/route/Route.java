@@ -28,6 +28,8 @@ public class Route implements Serializable{
     public String remoteFile;
     @SerializedName("uri")
     public String uriRegex;
+    @SerializedName("pack_in_app")
+    public boolean necessaryUpdate;
 
     public Route() {
     }

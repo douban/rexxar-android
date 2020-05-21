@@ -93,8 +93,16 @@ public class HtmlHelper {
             return;
         }
         ArrayList<Route> validRoutes = new ArrayList<>();
-        validRoutes.addAll(routes.items);
-        validRoutes.addAll(routes.partialItems);
+        for (Route route : routes.items) {
+            if (route.necessaryUpdate) {
+                validRoutes.add(route);
+            }
+        }
+        for (Route route : routes.partialItems) {
+            if (route.necessaryUpdate) {
+                validRoutes.add(route);
+            }
+        }
         // 重新下载
         mDownloadingProcess.clear();
         int totalSize = validRoutes.size();
