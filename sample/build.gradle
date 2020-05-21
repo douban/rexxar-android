@@ -32,8 +32,8 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile(project(':core'))
+    api fileTree(dir: 'libs', include: ['*.jar'])
+    api(project(':core'))
     implementation "com.jakewharton:butterknife:10.1.0"
     annotationProcessor "com.jakewharton:butterknife-compiler:10.1.0"
 }

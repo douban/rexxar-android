@@ -23,15 +23,15 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'androidx.legacy:legacy-support-v4:1.0.0'
-    compile 'androidx.appcompat:appcompat:1.0.0'
-    compile 'androidx.swiperefreshlayout:swiperefreshlayout:1.0.0'
-    compile 'com.squareup.okhttp3:okhttp:3.10.0'
-    compile 'com.jakewharton:disklrucache:2.0.2'
-    compile 'com.mcxiaoke.next:task:1.5.0'
-    compile 'com.google.code.gson:gson:2.8.2'
-    compile 'de.greenrobot:eventbus:2.4.1'
+    api fileTree(dir: 'libs', include: ['*.jar'])
+    api 'androidx.legacy:legacy-support-v4:1.0.0'
+    api 'androidx.appcompat:appcompat:1.0.0'
+    api 'androidx.swiperefreshlayout:swiperefreshlayout:1.0.0'
+    api 'com.squareup.okhttp3:okhttp:3.10.0'
+    api 'com.jakewharton:disklrucache:2.0.2'
+    api 'com.mcxiaoke.next:task:1.5.0'
+    api 'com.google.code.gson:gson:2.8.2'
+    api 'de.greenrobot:eventbus:2.4.1'
 }
 //apply from: 'bintray.gradle'
 apply from: '../gradle-mvn-push.gradle'
