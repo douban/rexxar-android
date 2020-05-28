@@ -295,12 +295,15 @@ public class RouteManager {
         });
     }
 
+    public void refreshRouteFast(final RouteRefreshCallback callback) {
+        refreshRouteFast(callback, false);
+    }
     /**
      * 不校验html文件是否存在, 直接跟新route,避免route更新不及时引入的问题
      *
      * @param callback
      */
-    public void refreshRouteFast(final RouteRefreshCallback callback) {
+    public void refreshRouteFast(final RouteRefreshCallback callback,final boolean forceRefresh) {
         RouteFetcher.fetchRoutes(new RouteRefreshCallback() {
             @Override
             public void onSuccess(String data) {
@@ -313,7 +316,7 @@ public class RouteManager {
                         }
                         return;
                     }
-                    if (null != mRoutes && !mRoutes.before(newRoutes)) {
+                    if (!forceRefresh && null != mRoutes && !mRoutes.before(newRoutes)) {
                         if (null != callback) {
                             callback.onFail();
                         }
