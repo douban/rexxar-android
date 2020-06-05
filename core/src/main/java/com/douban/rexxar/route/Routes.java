@@ -1,5 +1,7 @@
 package com.douban.rexxar.route;
 
+import android.text.TextUtils;
+
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
@@ -13,8 +15,7 @@ public class Routes {
     public int count;
     @SerializedName("deploy_time")
     public String deployTime;
-    @SerializedName("release_id")
-    public long releaseId;
+    public String version;
     // 页面rexxar uri
     public List<Route> items = new ArrayList<>();
     // 局部rexxar uri
@@ -41,9 +42,9 @@ public class Routes {
             return false;
         }
         // 但凡有一个release_id为0，则都会自动升级
-        if (releaseId == 0 || routes.releaseId == 0) {
+        if (TextUtils.isEmpty(version) || TextUtils.isEmpty(routes.version)) {
             return true;
         }
-        return this.releaseId <= routes.releaseId;
+        return this.version.compareTo(routes.version) < 0;
     }
 }
