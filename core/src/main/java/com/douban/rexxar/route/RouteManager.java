@@ -250,11 +250,17 @@ public class RouteManager {
         return null;
     }
 
-
     /**
      * 刷新路由,检查html有效之后route再生效
      */
     public void refreshRoute(final RouteRefreshCallback callback) {
+        refreshRoute(callback, false);
+    }
+
+    /**
+     * 刷新路由,检查html有效之后route再生效
+     */
+    public void refreshRoute(final RouteRefreshCallback callback, final boolean forceRefresh) {
         mRouteRefreshCallback = callback;
         RouteFetcher.fetchRoutes(new RouteRefreshCallback() {
             @Override
@@ -269,7 +275,7 @@ public class RouteManager {
                         }
                         return;
                     }
-                    if (null != mRoutes && !mRoutes.before(routes)) {
+                    if (!forceRefresh && null != mRoutes && !mRoutes.before(routes)) {
                         if (null != callback) {
                             callback.onFail();
                         }
