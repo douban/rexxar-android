@@ -7,6 +7,7 @@ import com.douban.rexxar.resourceproxy.cache.CacheHelper;
 import com.douban.rexxar.resourceproxy.network.HtmlHelper;
 import com.douban.rexxar.resourceproxy.network.INetwork;
 import com.douban.rexxar.resourceproxy.network.NetworkImpl;
+import com.douban.rexxar.route.RouteManager;
 import com.douban.rexxar.route.Routes;
 
 import java.util.ArrayList;
@@ -47,8 +48,8 @@ public class ResourceProxy {
     /**
      * 预加载html
      */
-    public void prepareHtmlFiles(Routes routes) {
-        HtmlHelper.prepareHtmlFiles(routes);
+    public void prepareHtmlFiles(Routes routes, RouteManager.RouteRefreshCallback callback) {
+        HtmlHelper.prepareHtmlFiles(routes, callback);
     }
 
     public void clearCache() {

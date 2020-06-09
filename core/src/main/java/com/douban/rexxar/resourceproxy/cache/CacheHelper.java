@@ -187,7 +187,7 @@ public class CacheHelper {
     }
 
     // 建议html文件的命名规则是：%filename%-%hash code%.html
-    private boolean checkHtmlFile(String url, byte[] bytes) {
+    public boolean checkHtmlFile(String url, byte[] bytes) {
         String fileName = Uri.parse(url).getLastPathSegment();
         // 不是以html为结尾的，则不进行校验
         if (!fileName.endsWith(Constants.EXTENSION_HTML)) {

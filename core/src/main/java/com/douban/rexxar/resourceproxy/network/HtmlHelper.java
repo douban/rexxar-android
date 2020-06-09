@@ -5,6 +5,7 @@ import com.douban.rexxar.Rexxar;
 import com.douban.rexxar.resourceproxy.cache.CacheEntry;
 import com.douban.rexxar.resourceproxy.cache.CacheHelper;
 import com.douban.rexxar.route.Route;
+import com.douban.rexxar.route.RouteManager;
 import com.douban.rexxar.route.Routes;
 import com.douban.rexxar.utils.BusProvider;
 import com.douban.rexxar.utils.GsonHelper;
@@ -37,6 +38,7 @@ public class HtmlHelper {
     private static void doDownloadHtmlFile(String url, Callback callback) {
         LogUtils.i(TAG, "url = " + url);
         Request request = new Request.Builder().url(url)
+                .addHeader("User-Agent", Rexxar.getUserAgent())
                 .build();
         Rexxar.getOkHttpClient().newCall(request)
                 .enqueue(callback);
@@ -55,11 +57,14 @@ public class HtmlHelper {
                 try {
                     if (response.isSuccessful()) {
                         // 1. 存储到本地
-                        boolean result = CacheHelper.getInstance().saveHtmlCache(url, IOUtils.toByteArray(response.body()
-                                .byteStream()));
+                        byte[] data = IOUtils.toByteArray(response.body()
+                                .byteStream());
+                        boolean result = CacheHelper.getInstance().saveHtmlCache(url, data);
                         // 存储失败，则失败
                         if (!result) {
-                            onFailure(call, new IOException("file save fail!"));
+                            boolean checkUrl = CacheHelper.getInstance().checkUrl(url);
+                            boolean checkHtmlFile = CacheHelper.getInstance().checkHtmlFile(url, data);
+                            onFailure(call, new IOException("html file save fail! url:" + url +  " ; checkUrl:" + checkUrl + " ; checkHtmlFile" + checkHtmlFile));
                         } else {
                             if (null != callback) {
                                 callback.onResponse(call, response);
@@ -70,7 +75,7 @@ public class HtmlHelper {
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    onFailure(call, new IOException("file save fail!"));
+                    onFailure(call, new IOException("file save fail!" + e.getMessage()));
                     LogUtils.i(TAG, "prepare html fail");
                 }
             }
@@ -88,7 +93,7 @@ public class HtmlHelper {
      * 空闲时间下载html文件
      * // FIXME 考虑并发问题
      */
-    public static void prepareHtmlFiles(Routes routes) {
+    public static void prepareHtmlFiles(Routes routes, final RouteManager.RouteRefreshCallback callback) {
         if (null == routes || routes.isEmpty()) {
             return;
         }
@@ -123,14 +128,20 @@ public class HtmlHelper {
                         public void onFailure(Call call, IOException e) {
                             // 如果下载失败，则不移除
                             LogUtils.i(TAG, "download html failed" + tempRoute.getHtmlFile() + e.getMessage());
+                            // TODO 怀疑点1：下载失败
+                            if (null != callback) {
+                                callback.onHtmlFileCacheFail(e.getMessage());
+                            }
                         }
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
+                            // TODO 怀疑点2：移除失败
                             mDownloadingProcess.remove(tempRoute.getHtmlFile());
                             LogUtils.i(TAG, "download html success " + tempRoute.getHtmlFile());
                             // 如果全部文件下载成功，则发送校验成功事件
                             if (mDownloadingProcess.isEmpty()) {
+                                // TODO 怀疑点3：没有调用到这，或者没人接收
                                 LogUtils.i(TAG, "download html complete");
                                 BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_VALID, null));
                             }

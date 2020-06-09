@@ -332,6 +332,13 @@ public class RexxarWebViewCore extends SafeWebView {
                         callback.onFail(RxLoadError.ROUTE_NOT_FOUND);
                     }
                 }
+
+                @Override
+                public void onHtmlFileCacheFail(String cause) {
+                    if (null != callback) {
+                        callback.onFail(RxLoadError.ROUTE_NOT_FOUND);
+                    }
+                }
             });
         } else {
             if (null != callback) {
