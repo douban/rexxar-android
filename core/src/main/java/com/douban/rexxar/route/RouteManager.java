@@ -49,6 +49,8 @@ public class RouteManager {
         void onSuccess(String data);
 
         void onFail();
+
+        void onHtmlFileCacheFail(String cause);
     }
 
     public interface UriHandleCallback {
@@ -261,6 +263,7 @@ public class RouteManager {
      * 刷新路由,检查html有效之后route再生效
      */
     public void refreshRoute(final RouteRefreshCallback callback, final boolean forceRefresh) {
+        // TODO 确保不重复刷新，避免热启动过快的刷新
         mRouteRefreshCallback = callback;
         RouteFetcher.fetchRoutes(new RouteRefreshCallback() {
             @Override
@@ -281,7 +284,7 @@ public class RouteManager {
                         }
                         return;
                     }
-                    ResourceProxy.getInstance().prepareHtmlFiles(routes);
+                    ResourceProxy.getInstance().prepareHtmlFiles(routes, callback);
                 } catch (Exception e) {
                     // FIXME: 解析失败，不会更新
                     LogUtils.e(TAG, e.getMessage());
@@ -296,6 +299,13 @@ public class RouteManager {
                 // FIXME: 请求失败，不会更新
                 if (null != callback) {
                     callback.onFail();
+                }
+            }
+
+            @Override
+            public void onHtmlFileCacheFail(String cause) {
+                if (null != callback) {
+                    callback.onHtmlFileCacheFail(cause);
                 }
             }
         });
@@ -335,7 +345,7 @@ public class RouteManager {
                         callback.onSuccess(data);
                     }
                     // prepare html files
-                    ResourceProxy.getInstance().prepareHtmlFiles(mRoutes);
+                    ResourceProxy.getInstance().prepareHtmlFiles(mRoutes, callback);
                 } catch (Exception e) {
                     LogUtils.e(TAG, e.getMessage());
                     if (null != callback) {
@@ -348,6 +358,13 @@ public class RouteManager {
             public void onFail() {
                 if (null != callback) {
                     callback.onFail();
+                }
+            }
+
+            @Override
+            public void onHtmlFileCacheFail(String cause) {
+                if (null != callback) {
+                    callback.onHtmlFileCacheFail(cause);
                 }
             }
         });
@@ -477,6 +494,11 @@ public class RouteManager {
 
             @Override
             public void onFail() {
+                callback.onResult(false);
+            }
+
+            @Override
+            public void onHtmlFileCacheFail(String cause) {
                 callback.onResult(false);
             }
         });
