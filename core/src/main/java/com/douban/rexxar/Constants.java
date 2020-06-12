@@ -19,7 +19,7 @@ public class Constants {
     /**
      * Container api pre-fix
      */
-    public static final String CONTAINER_API_BASE = "http://rexxar-container/api";
+    public static final String CONTAINER_API_BASE = "https://rexxar-container/api";
 
     /**
      * Container widget pre-fix without schema
