@@ -308,13 +308,14 @@ public class CacheHelper {
             if (!url.contains(File.separator)) {
                 return url;
             }
-            String key = Utils.hash(url);
+            String urlPath = Uri.parse(url).getPath();
+            String key = Utils.hash(TextUtils.isEmpty(urlPath) ? url : urlPath);
             LogUtils.i(TAG, "url : " + url + " ; key : " + key);
             return key;
         } catch (Exception e) {
             LogUtils.e(TAG, e.getMessage());
         }
 
-        return null;
+        return url;
     }
 }
