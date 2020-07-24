@@ -311,9 +311,6 @@ public class RouteManager {
         });
     }
 
-    public void refreshRouteFast(final RouteRefreshCallback callback) {
-        refreshRouteFast(callback, false);
-    }
     /**
      * 不校验html文件是否存在, 直接跟新route,避免route更新不及时引入的问题
      *
@@ -486,7 +483,7 @@ public class RouteManager {
         if (null == callback) {
             return;
         }
-        RouteManager.getInstance().refreshRouteFast(new RouteManager.RouteRefreshCallback() {
+        RouteManager.getInstance().refreshRoute(new RouteManager.RouteRefreshCallback() {
             @Override
             public void onSuccess(String data) {
                 callback.onResult(handleByNative(uri));

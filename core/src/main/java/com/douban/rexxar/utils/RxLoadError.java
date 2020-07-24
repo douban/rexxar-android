@@ -15,6 +15,7 @@ public class RxLoadError implements Parcelable, Cloneable {
     public static final RxLoadError ROUTE_NOT_FOUND = new RxLoadError(0, "无法找到合适的Route");
     public static final RxLoadError HTML_NO_CACHE = new RxLoadError(1, "找不到html缓存");
     public static final RxLoadError HTML_DOWNLOAD_FAIL = new RxLoadError(2, "资源加载失败");
+    public static final RxLoadError HTML_CACHE_FAIL = new RxLoadError(5, "资源缓存失败");
     public static final RxLoadError HTML_CACHE_INVALID = new RxLoadError(3, "html缓存失效");
     public static final RxLoadError JS_CACHE_INVALID = new RxLoadError(4, "js缓存失效");
     public static final RxLoadError UNKNOWN = new RxLoadError(10, "unknown");

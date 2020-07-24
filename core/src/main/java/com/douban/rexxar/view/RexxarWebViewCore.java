@@ -311,7 +311,7 @@ public class RexxarWebViewCore extends SafeWebView {
         }
         if (null == route) {
             LogUtils.i(TAG, "route not found");
-            RouteManager.getInstance().refreshRouteFast(new RouteManager.RouteRefreshCallback() {
+            RouteManager.getInstance().refreshRoute(new RouteManager.RouteRefreshCallback() {
                 @Override
                 public void onSuccess(String data) {
                     Route temp = page ? RouteManager.getInstance().findRoute(uri) : RouteManager.getInstance().findPartialRoute(uri);
@@ -359,7 +359,7 @@ public class RexxarWebViewCore extends SafeWebView {
                     public void onFailure(Call call, IOException e) {
                         if (null != callback) {
                             RxLoadError error = RxLoadError.HTML_DOWNLOAD_FAIL;
-                            error.extra = route.getHtmlFile();
+                            error.extra = route.getHtmlFile() + "\n" + e.getMessage();
                             callback.onFail(error);
                         }
                     }
@@ -381,7 +381,7 @@ public class RexxarWebViewCore extends SafeWebView {
                                     }
                                 } else {
                                     if (null != callback) {
-                                        RxLoadError error = RxLoadError.HTML_DOWNLOAD_FAIL;
+                                        RxLoadError error = RxLoadError.HTML_CACHE_FAIL;
                                         error.extra = route.getHtmlFile();
                                         callback.onFail(error);
                                     }
