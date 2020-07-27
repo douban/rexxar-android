@@ -183,6 +183,7 @@ public class CacheHelper {
             LogUtils.i(TAG, "html file check fail : url: " + url + ", bytes md5: " + MD5Utils.getMd5(bytes));
             return false;
         }
+
         return mInternalHtmlCache.saveCache(url, bytes);
     }
 

@@ -36,14 +36,7 @@ public class HtmlFileCache implements ICache {
     private DiskLruCache mDiskCache;
 
     public HtmlFileCache() {
-        File directory = new File(AppContext.getInstance().getDir(Constants.CACHE_HOME_DIR,
-                Context.MODE_PRIVATE), Constants.DEFAULT_DISK_FILE_PATH + "_html");
-        try {
-            mDiskCache = DiskLruCache.open(directory, Constants.VERSION, 2,
-                    Constants.CACHE_SIZE);
-        } catch (IOException e) {
-            LogUtils.e(TAG, e.getMessage());
-        }
+        checkState();
     }
 
     @Override
@@ -53,12 +46,26 @@ public class HtmlFileCache implements ICache {
 
     @Override
     public boolean removeCache(String url) {
+        checkState();
         try {
             LogUtils.i(TAG, "remove cache  : url " + url);
             return mDiskCache.remove(CacheHelper.getInstance().urlToKey(url));
         } catch (IOException e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    private void checkState() {
+        if (null == mDiskCache || mDiskCache.isClosed()) {
+            File directory = new File(AppContext.getInstance().getDir(Constants.CACHE_HOME_DIR,
+                    Context.MODE_PRIVATE), Constants.DEFAULT_DISK_FILE_PATH + "_html");
+            try {
+                mDiskCache = DiskLruCache.open(directory, Constants.VERSION, 2,
+                        Constants.CACHE_SIZE);
+            } catch (IOException e) {
+                LogUtils.e(TAG, e.getMessage());
+            }
         }
     }
 
@@ -72,6 +79,7 @@ public class HtmlFileCache implements ICache {
         if (TextUtils.isEmpty(url) || null == mDiskCache) {
             return false;
         }
+        checkState();
         DiskLruCache.Editor editor = null;
         String key = CacheHelper.getInstance().urlToKey(url);
         // 如果存在，则先删掉之前的缓存
@@ -119,6 +127,7 @@ public class HtmlFileCache implements ICache {
         if (TextUtils.isEmpty(url) || null == mDiskCache) {
             return null;
         }
+        checkState();
         InputStream inputStream = null;
         try {
             DiskLruCache.Snapshot snapshot = mDiskCache.get(
