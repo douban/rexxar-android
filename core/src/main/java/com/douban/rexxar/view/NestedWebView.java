@@ -160,7 +160,7 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
                         // 竖向滑动
                         if (dispatchNestedPreScroll(0, deltaY, mScrollConsumed, mOffsetInWindow)) {
                             deltaY -= mScrollConsumed[1];
-                            mLastY = eventY - mOffsetInWindow[1];
+                            mLastY = eventY;
                             mNestedOffsetY += mOffsetInWindow[1];
                             event.offsetLocation(0, -mOffsetInWindow[1]);
                         } else {
@@ -198,7 +198,7 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
                                 int dyUnconsumed = deltaY - (getScrollY() - oldScrollY);
                                 if (dispatchNestedScroll(0, dyConsumed, 0, dyUnconsumed, mOffsetInWindow)) {
                                     mNestedOffsetY += mOffsetInWindow[1];
-                                    mLastY -= mOffsetInWindow[1];
+//                                    mLastY -= mOffsetInWindow[1];
                                     event.offsetLocation(0, mOffsetInWindow[1]);
                                 }
                             }
