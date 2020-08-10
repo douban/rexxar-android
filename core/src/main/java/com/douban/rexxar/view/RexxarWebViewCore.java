@@ -357,11 +357,7 @@ public class RexxarWebViewCore extends SafeWebView {
                 HtmlHelper.prepareHtmlFile(route.getHtmlFile(), new Callback() {
                     @Override
                     public void onFailure(Call call, IOException e) {
-                        if (null != callback) {
-                            RxLoadError error = RxLoadError.HTML_DOWNLOAD_FAIL;
-                            error.extra = route.getHtmlFile() + "\n" + e.getMessage();
-                            callback.onFail(error);
-                        }
+                        doLoadRemote(uri, route);
                     }
 
                     @Override
@@ -378,14 +374,10 @@ public class RexxarWebViewCore extends SafeWebView {
                                         if (null != callback) {
                                             callback.onSuccess();
                                         }
-                                    }
-                                } else {
-                                    if (null != callback) {
-                                        RxLoadError error = RxLoadError.HTML_CACHE_FAIL;
-                                        error.extra = route.getHtmlFile();
-                                        callback.onFail(error);
+                                        return;
                                     }
                                 }
+                                doLoadRemote(uri, route);
                             }
                         });
                     }
@@ -397,8 +389,12 @@ public class RexxarWebViewCore extends SafeWebView {
     private void doLoadCache(String uri, Route route) {
         LogUtils.i(TAG, "file cache , doLoadCache cache file");
         // using file schema to doLoadCache
-        // 4.0的版本加载本地文件不能传递parameters，所以html文本需要替换内容
         loadUrl(Constants.FILE_AUTHORITY + route.getHtmlFile() + "?uri=" + Uri.encode(uri));
+    }
+
+    public void doLoadRemote(String uri, Route route) {
+        LogUtils.i(TAG, "route file , doLoadRemote remote file");
+        loadUrl(route.getHtmlFile() + "?uri=" + Uri.encode(uri));
     }
 
     public interface WebViewHeightCallback {
