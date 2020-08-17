@@ -130,8 +130,9 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
         if (action == MotionEvent.ACTION_DOWN) {
             mNestedOffsetY = 0;
         }
-        int eventX = (int) event.getX();
-        int eventY = (int) event.getY();
+
+        int eventX = (int) event.getRawX();
+        int eventY = (int) event.getRawY();
         event.offsetLocation(0, -mNestedOffsetY);
         switch (action) {
             case MotionEvent.ACTION_MOVE:
@@ -191,6 +192,7 @@ public class NestedWebView extends WebView implements NestedScrollingChild {
                         // 修正deltaY
                         if (deltaY == getScrollY() - oldScrollY) {
                             // 完全消耗完，不做处理
+                            returnValue = true;
                         } else if (deltaY < getScrollY() - oldScrollY) {
                             // 下滑时候未消耗完
                             if (getScrollY() <= 5) {
